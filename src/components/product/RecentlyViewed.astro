@@ -1,0 +1,124 @@
+---
+export interface Props {
+  currentProductId: string;
+}
+
+const { currentProductId } = Astro.props;
+
+// Sample product data - In a real app, this would come from a database or API
+const allProducts = [
+  {
+    id: 1,
+    name: "Điện thoại iPhone 14 Pro",
+    price: 24990000,
+    image: "https://images.pexels.com/photos/5750001/pexels-photo-5750001.jpeg",
+    slug: "dien-thoai-iphone-14-pro"
+  },
+  {
+    id: 2,
+    name: "Áo thun nam cổ tròn basic",
+    price: 199000,
+    image: "https://images.pexels.com/photos/1656684/pexels-photo-1656684.jpeg",
+    slug: "ao-thun-nam-co-tron-basic"
+  },
+  {
+    id: 3,
+    name: "Laptop Asus Zenbook 14",
+    price: 18990000,
+    image: "https://images.pexels.com/photos/18105/pexels-photo.jpg",
+    slug: "laptop-asus-zenbook-14"
+  },
+  {
+    id: 4,
+    name: "Máy pha cà phê tự động",
+    price: 3590000,
+    image: "https://images.pexels.com/photos/585753/pexels-photo-585753.jpeg",
+    slug: "may-pha-ca-phe-tu-dong"
+  },
+  {
+    id: 5,
+    name: "Giày thể thao nữ",
+    price: 850000,
+    image: "https://images.pexels.com/photos/1598505/pexels-photo-1598505.jpeg",
+    slug: "giay-the-thao-nu"
+  },
+  {
+    id: 6,
+    name: "Tai nghe không dây Sony",
+    price: 2790000,
+    image: "https://images.pexels.com/photos/3394665/pexels-photo-3394665.jpeg",
+    slug: "tai-nghe-khong-day-sony"
+  }
+];
+---
+
+<div class="mt-16" id="recently-viewed-section" style="display: none;">
+  <h2 class="text-2xl font-bold text-gray-900 mb-6">Sản phẩm đã xem</h2>
+  
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="recently-viewed-container">
+    <!-- Products will be dynamically added here via JavaScript -->
+  </div>
+</div>
+
+<script define:vars={{ allProducts, currentProductId }}>
+  // Format price in Vietnamese currency - Moved inside script tag
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Get recently viewed products from localStorage
+    const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    
+    // If there are recently viewed products (excluding current product)
+    if (recentlyViewed.length > 0) {
+      const container = document.getElementById('recently-viewed-container');
+      const section = document.getElementById('recently-viewed-section');
+      
+      // Filter out current product and map to actual product data
+      const recentlyViewedProducts = recentlyViewed
+        .map(slug => allProducts.find(p => p.slug === slug))
+        .filter(product => product && product.id !== currentProductId)
+        .slice(0, 4); // Show max 4 products
+      
+      if (recentlyViewedProducts.length > 0) {
+        // Show the section
+        section.style.display = 'block';
+        
+        // Create HTML for each product
+        recentlyViewedProducts.forEach(product => {
+          const productHtml = `
+            <a href="/san-pham/${product.url}" class="group">
+              <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+                <div class="relative aspect-square overflow-hidden">
+                  <img 
+                    src="${product.image}" 
+                    alt="${product.name}"
+                    class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div class="p-4">
+                  <h3 class="text-gray-800 font-medium text-sm line-clamp-2 mb-2 group-hover:text-primary-600 transition-colors">
+                    ${product.name}
+                  </h3>
+                  <div class="text-gray-900 font-semibold">
+                    ${formatPrice(product.price)}
+                  </div>
+                </div>
+              </div>
+            </a>
+          `;
+          
+          // Add to container
+          if (container) {
+            container.innerHTML += productHtml;
+          }
+        });
+      }
+    }
+  });
+</script>

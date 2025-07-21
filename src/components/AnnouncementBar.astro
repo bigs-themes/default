@@ -1,0 +1,55 @@
+---
+import { Button } from '@/components/ui';
+
+// Props để nhận cấu hình từ LivePreviewManager
+export interface Props {
+  visible?: boolean;
+  content?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  showOnHomepageOnly?: boolean;
+  currentPage?: string;
+}
+
+const { 
+  visible, 
+  content, 
+  textColor, 
+  backgroundColor, 
+  showOnHomepageOnly, 
+  currentPage 
+} = Astro.props;
+
+// Kiểm tra xem có hiển thị không
+const shouldShow = visible && (!showOnHomepageOnly || currentPage === 'home');
+console.log('🎯 AnnouncementBar.astro - shouldShow:', shouldShow);
+---
+{shouldShow && (
+  <div id="announcement-bar" class="announcement-bar" style={`background-color: ${backgroundColor}; color: ${textColor};`}>
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-2">
+        <div class="flex items-center">
+          <marquee id="announcement-content" scrollamount="3" class="text-sm font-medium">
+            {content}
+          </marquee>
+        </div>
+        <div id="announcement-button">
+          <Button 
+            variant="outline" 
+            size="sm"
+            class="hidden sm:inline-block border-current hover:bg-white hover:text-black"
+            onclick="window.location.href='/san-pham'"
+          >
+            Xem ngay
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+<style>
+  .announcement-bar {
+    transition: all 0.3s ease;
+  }
+</style>

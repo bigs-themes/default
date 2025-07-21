@@ -1,0 +1,821 @@
+---
+// import { Variants } from '../../utils/variants';
+import icons from '../../assets/icons.json'; 
+import { getDiscountedPrice, formatPrice } from '@/utils/price';
+import { DatabaseService } from '@/lib/database';
+import { shopStyleService } from '@/services/ShopStyleService';
+import { Input, Button, Card, Badge } from '@/components/ui';
+import FilterForm from './FilterForm.astro';
+
+// Load shop style config from database
+const host = Astro.request.headers.get('host') || '';
+const shopId = host.split('.')[0];
+
+if(shopId === ''){
+  Astro.redirect('/404');
+}
+
+// Load page layout settings from database or use defaults
+let pageLayoutSettings = {
+  fullWidthGrid: false,
+  productsPerRow: 4,
+  productsPerRowMobile: 2,
+  itemsPerPage: 8
+};
+
+if (shopId && shopId !== 'localhost' && shopId !== '127') {
+  try {
+    const shopStyleConfig = await shopStyleService.getShopStyleConfig(shopId);
+    if (shopStyleConfig?.pageInterface?.pageLayoutSettings) {
+      pageLayoutSettings = { ...pageLayoutSettings, ...shopStyleConfig.pageInterface.pageLayoutSettings };
+    }
+  } catch (error) {
+    // Handle error silently
+  }
+}
+
+// Use DatabaseService to get sections with products
+let sections = [];
+try {
+  sections = await DatabaseService.getSectionsWithProducts(shopId);
+} catch (error) {
+  console.error('Error loading sections:', error);
+  // Fallback to empty sections to prevent page crash
+  sections = [];
+}
+
+
+// Ensure section Data is an array
+const categories = Array.isArray(sections) 
+  ? sections.map((section: any) => ({
+      key: section.id.toString(),
+      name: section.name,
+      url: section.url,
+      productCount: section.product_count || 0
+    }))
+  : [];
+const totalProducts = sections.reduce((acc: number, section: any) => acc + (section.product_count || 0), 0);
+
+// Lấy các tham số từ URL
+const selectedSection = Astro.url.searchParams.get('section') || 'all';
+const searchTerm = Astro.url.searchParams.get('search') || '';
+const sortBy = Astro.url.searchParams.get('sort') || 'newest';
+const minPrice = Number(Astro.url.searchParams.get('minPrice') || '0');
+const maxPrice = Number(Astro.url.searchParams.get('maxPrice') || '1000000000');
+const currentPage = parseInt(Astro.url.searchParams.get('page') || '1');
+const pageSize = pageLayoutSettings.itemsPerPage;
+const skip = (currentPage - 1) * pageSize;
+
+// Các tùy chọn sắp xếp
+const sortOptions = [
+  { value: 'newest', label: 'Mới nhất' },
+  { value: 'price-asc', label: 'Giá tăng dần' },
+  { value: 'price-desc', label: 'Giá giảm dần' },
+  { value: 'featured', label: 'Nổi bật' }
+];
+
+// Các khoảng giá
+const priceRanges = [
+  { label: 'Tất cả', min: 0, max: 1000000000 },
+  { label: 'Dưới 1 triệu', min: 0, max: 1000000 },
+  { label: '1 - 5 triệu', min: 1000000, max: 5000000 },
+  { label: '5 - 10 triệu', min: 5000000, max: 10000000 },
+  { label: '10 - 20 triệu', min: 10000000, max: 20000000 },
+  { label: 'Trên 20 triệu', min: 20000000, max: 1000000000 }
+];
+
+function getIconSvgBySlug(slug: string) {
+  const icon = icons.find(i => i.slug === slug);
+  return icon ? icon.svg : '';
+}
+---
+
+<div class={`${pageLayoutSettings.fullWidthGrid ? 'w-full' : 'max-w-screen-xl'} mx-auto px-4 sm:px-6 lg:px-8`}>
+  <div class="space-y-6">
+    <!-- Bộ lọc -->
+    <FilterForm
+      categories={categories}
+      totalProducts={totalProducts}
+      selectedSection={selectedSection}
+      searchTerm={searchTerm}
+      sortBy={sortBy}
+      minPrice={minPrice}
+      maxPrice={maxPrice}
+      sortOptions={sortOptions}
+      priceRanges={priceRanges}
+    />
+
+    <!-- Danh sách sản phẩm -->
+    <div 
+      id="product-grid-container" 
+      class="min-h-[700px]"
+      data-items-per-page={pageLayoutSettings.itemsPerPage}
+    > 
+      <div 
+        id="product-grid" 
+        class="grid gap-4"
+        style={`
+          grid-template-columns: repeat(${pageLayoutSettings.productsPerRowMobile}, 1fr);
+          --products-per-row: ${pageLayoutSettings.productsPerRow};
+          --products-per-row-mobile: ${pageLayoutSettings.productsPerRowMobile};
+        `}
+      >
+        
+        
+      </div>
+    </div> 
+
+    <!-- Phân trang -->
+    <div id="pagination" class="mt-8 flex justify-center">
+     
+    </div>
+    
+  </div>
+</div>
+<script type="module" lang="ts" define:vars={{origin: Astro.url.origin}}>
+  document.addEventListener('DOMContentLoaded', () => {
+    // console.log('origin:', origin);
+  });
+</script>
+<script>
+  import { Variants } from '../../utils/variants';
+  import { getDiscountedPrice, formatPrice } from '@/utils/price';
+  import { renderProductCard } from '@/utils/uiComponents';
+  
+  // Page layout settings management - sync with server-side settings
+  let currentPageLayoutSettings = {
+    fullWidthGrid: false,
+    productsPerRow: 4,
+    productsPerRowMobile: 2,
+    itemsPerPage: 8
+  };
+  
+  // Initialize with server-side settings if available
+  const productGrid = document.getElementById('product-grid');
+  if (productGrid) {
+    const productsPerRow = getComputedStyle(productGrid).getPropertyValue('--products-per-row');
+    const productsPerRowMobile = getComputedStyle(productGrid).getPropertyValue('--products-per-row-mobile');
+    
+    if (productsPerRow) {
+      currentPageLayoutSettings.productsPerRow = parseInt(productsPerRow) || 4;
+    }
+    if (productsPerRowMobile) {
+      currentPageLayoutSettings.productsPerRowMobile = parseInt(productsPerRowMobile) || 2;
+    }
+  }
+  
+  // Get itemsPerPage from server-side settings (from CSS or data attribute)
+  const container = document.querySelector('#product-grid-container');
+  if (container) {
+    const itemsPerPage = container.getAttribute('data-items-per-page');
+    if (itemsPerPage) {
+      currentPageLayoutSettings.itemsPerPage = parseInt(itemsPerPage) || 8;
+    }
+  }
+  
+  // Function to update page layout settings
+  const updatePageLayoutSettings = (settings: any) => {
+    currentPageLayoutSettings = { ...currentPageLayoutSettings, ...settings };
+    
+    // Update container classes
+    const container = document.querySelector('#product-grid-container')?.parentElement?.parentElement;
+    if (container) {
+      if (currentPageLayoutSettings.fullWidthGrid) {
+        container.classList.add('full-width-grid');
+        container.classList.remove('max-w-screen-xl');
+      } else {
+        container.classList.remove('full-width-grid');
+        container.classList.add('max-w-screen-xl');
+      }
+    }
+    
+    // Update grid CSS variables
+    const productGrid = document.getElementById('product-grid');
+    if (productGrid) {
+      productGrid.style.setProperty('--products-per-row', currentPageLayoutSettings.productsPerRow.toString());
+      productGrid.style.setProperty('--products-per-row-mobile', currentPageLayoutSettings.productsPerRowMobile.toString());
+      
+      // Force update grid layout
+      forceUpdateGridLayout(productGrid);
+      
+    }
+    // If itemsPerPage changed, reload current page with new page size
+    if (settings.itemsPerPage !== undefined) {
+      const currentParams = getCurrentParams();
+      currentParams.page = '1'; // Reset to first page when changing page size
+      updateContent(currentParams);
+    }
+  };
+  
+  // Function to force update grid layout
+  const forceUpdateGridLayout = (productGrid: HTMLElement) => {
+    // Force reflow by temporarily changing and restoring the grid
+    const originalDisplay = productGrid.style.display;
+    productGrid.style.display = 'none';
+    
+    // Force browser to recalculate
+    productGrid.offsetHeight;
+    
+    // Restore display
+    productGrid.style.display = 'grid';
+    
+    // Set grid template columns directly
+    if (window.innerWidth >= 768) {
+      productGrid.style.gridTemplateColumns = `repeat(${currentPageLayoutSettings.productsPerRow}, 1fr)`;
+    } else if (window.innerWidth >= 640) {
+      productGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    } else {
+      productGrid.style.gridTemplateColumns = `repeat(${currentPageLayoutSettings.productsPerRowMobile}, 1fr)`;
+    }
+    
+  };
+  
+  // Expose function to window for LivePreviewManager
+  (window as any).updatePageLayoutSettings = updatePageLayoutSettings;
+  
+  // Global edit mode state
+  let isEditMode = false;
+  let messageCount = 0;
+  
+  // Listen for live preview updates
+  window.addEventListener('message', (event) => {
+    // console.log('📥 Received message:', event.data);
+    
+    // Track message state for debug
+    messageCount++;
+    (window as any).messageCount = messageCount;
+    (window as any).lastMessageType = event.data.type;
+    
+    // Handle EDIT_MODE message
+    if (event.data.type === 'EDIT_MODE') {
+      isEditMode = event.data.data.isEditMode;
+      (window as any).isEditMode = isEditMode;
+    }
+    
+    // Handle UPDATE_STYLES message
+    if (event.data.type === 'UPDATE_STYLES' && event.data.data?.pageInterface?.pageLayoutSettings) {
+      updatePageLayoutSettings(event.data.data.pageInterface.pageLayoutSettings);
+    }
+  });
+  
+  // Initialize page layout settings from CSS variables if available
+  document.addEventListener('DOMContentLoaded', () => {
+    const productGrid = document.getElementById('product-grid');
+    if (productGrid) {
+      // Initial grid layout update
+      forceUpdateGridLayout(productGrid);
+    }
+  });
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    const productGrid = document.getElementById('product-grid');
+    if (productGrid) {
+      forceUpdateGridLayout(productGrid);
+    }
+  });
+  
+  // Hàm helper để tạo URL với các tham số
+  const createFilterUrl = (params: Record<string, string>) => {
+    const searchParams = new URLSearchParams();
+    // Luôn thêm các tham số mặc định nếu không có
+    const defaultParams = {
+      section: 'all',
+      search: '',
+      sort: 'newest',
+      minPrice: '0',
+      maxPrice: '1000000000',
+      page: '1'
+    };
+
+    // Merge params với default params
+    const finalParams = { ...defaultParams, ...params };
+    
+    // Chỉ thêm các tham số có giá trị khác mặc định
+    Object.entries(finalParams).forEach(([key, value]) => {
+      if (value && value !== defaultParams[key as keyof typeof defaultParams]) {
+        searchParams.set(key, value);
+      }
+    });
+
+    return `${window.location.pathname}?${searchParams.toString()}`;
+  };
+
+  // Hàm cập nhật URL không reload trang
+  const updateURL = (params: Record<string, string>) => {
+    window.history.replaceState(params, '', window.location.pathname);
+  };
+
+  // Hàm helper để lấy các tham số hiện tại
+  const getCurrentParams = () => {
+    const form = document.getElementById('filter-form') as HTMLFormElement;
+    const formData = new FormData(form);
+    const params: Record<string, string> = {};
+    
+    // Lấy các tham số từ form
+    for (const [key, value] of formData.entries()) {
+      if (key === 'priceRange' && typeof value === 'string') {
+        const [min, max] = value.split('-');
+        params.minPrice = min;
+        params.maxPrice = max;
+      } else if (typeof value === 'string') {
+        params[key] = value;
+      }
+    }
+
+    // Lấy các tham số từ state nếu không có trong form
+    const state = window.history.state || {};
+    ['section', 'search', 'sort', 'minPrice', 'maxPrice', 'page'].forEach(param => {
+      if (!params[param] && state[param]) {
+        params[param] = state[param];
+      }
+    });
+    
+    return params;
+  };
+
+  // Hàm render sản phẩm sử dụng UI components
+  const renderProduct = (product: any) => {
+    return renderProductCard({
+      product,
+      formatPrice,
+      getDiscountedPrice
+    });
+  };
+
+  // Hàm render phân trang
+  const renderPagination = (currentPage: number, totalPages: number) => {
+    let pages: number[] = [];
+    let showFirst = false, showLast = false;
+
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else if (currentPage <= 3) {
+      pages = [1, 2, 3, 4, 5];
+      showLast = true;
+    } else if (currentPage >= totalPages - 2) {
+      pages = [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages].filter(i => i > 0);
+      showFirst = true;
+    } else {
+      pages = [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+      showFirst = true;
+      showLast = true;
+    }
+
+    // Helper để render nút, nếu disabled thì thêm class và bỏ href
+    const renderBtn = (page: number, label: string, disabled: boolean, title: string) =>
+      `<a ${disabled ? '' : `href="?page=${page}"`} class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium ${disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'}" title="${title}">${label}</a>`;
+
+    return `
+      <div id="pagination" class="mt-8 flex justify-center">
+        <nav class="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+          ${renderBtn(1, '«', currentPage === 1, 'Trang đầu')}
+          ${renderBtn(currentPage - 1, '‹', currentPage === 1, 'Trang trước')}
+          ${showFirst ? '' : ''}
+          ${pages.map(page => `
+            <a href="?page=${page}" class="relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+              page === currentPage
+                ? 'z-10 bg-primary border-primary text-white'
+                : 'bg-white border-neutral text-neutral hover:bg-neutral hover:text-white'
+            }">${page}</a>
+          `).join('')}
+          ${showLast ? '' : ''}
+          ${renderBtn(currentPage + 1, '›', currentPage === totalPages, 'Trang sau')}
+          ${renderBtn(totalPages, '»', currentPage === totalPages, 'Trang cuối')}
+        </nav>
+      </div>
+    `;
+  };
+
+  // Hàm cập nhật nội dung
+  const updateContent = async (params: Record<string, string>) => {
+    const productGrid = document.getElementById('product-grid');
+    const paginationContainer = document.getElementById('pagination');
+    const pageSize = currentPageLayoutSettings.itemsPerPage;
+    const currentPage = parseInt(params.page || '1');
+    
+    // Tính toán skip dựa trên trang hiện tại
+    params.skip = ((currentPage - 1) * pageSize).toString();
+    params.take = pageSize.toString();
+
+    if (!productGrid || !paginationContainer) return;
+
+    // Hiển thị loading
+    productGrid.innerHTML = `<div class="check col-span-full py-8 text-center text-gray-500 flex items-center justify-center">
+          Đang tải 
+          <svg class="ml-2 animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>`;
+    paginationContainer.innerHTML = '';
+
+    try {
+      
+      // Fetch dữ liệu mới
+      const response = await fetch(`${origin}/api/product-filter?${new URLSearchParams(params)}`);
+      const { data: products, total, page, totalPages } = await response.json();
+
+      // Cập nhật URL với tất cả các tham số
+      updateURL(params);
+    
+      // Render sản phẩm
+      if (!products || products.length === 0) {
+        productGrid.innerHTML = '<div class="col-span-full py-8 text-center text-gray-500">Không tìm thấy sản phẩm phù hợp</div>';
+      } else {
+        const productHTML = products.map(renderProduct).join('');
+        
+        productGrid.innerHTML = productHTML;
+      }
+      
+      // Render phân trang với trang hiện tại từ response
+      if (totalPages > 1) {
+        paginationContainer.innerHTML = renderPagination(currentPage, totalPages);
+        // Thêm lại event listeners cho phân trang
+        addPaginationListeners();
+      } else {
+        paginationContainer.innerHTML = '';
+      }
+
+      // Thêm lại event listeners cho nút thêm vào giỏ
+      addCartListeners();
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      productGrid.innerHTML = '<div class="col-span-full py-8 text-center text-red-500">Có lỗi xảy ra khi tải dữ liệu</div>';
+    }
+    // Sau khi render xong - chỉ scroll khi có thay đổi filter (không phải load lần đầu)
+    if (window.location.search) {
+      setTimeout(() => {
+        const gridContainer = document.getElementById('product-grid-container');
+        if (gridContainer) {
+          const y = gridContainer.getBoundingClientRect().top + window.pageYOffset - 90;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      }, 0);
+    }
+  };
+
+  // Hàm thêm event listeners cho phân trang
+  const addPaginationListeners = () => {
+    document.querySelectorAll('a[href^="?page="]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const href = (e.currentTarget as HTMLAnchorElement).href;
+        const url = new URL(href);
+        const page = url.searchParams.get('page') || '1';
+
+        // Lấy lại tất cả filter hiện tại từ form
+        const currentParams = getCurrentParams();
+        currentParams.page = page; // Gán page từ link vừa click
+
+        // Cập nhật nội dung
+        updateContent(currentParams);
+      });
+    });
+  };
+
+  // Hàm thêm event listeners cho nút thêm vào giỏ
+  const addCartListeners = () => {
+    // Initialize variants if not exists
+    if (!window.variants) {
+      window.variants = new Variants();
+    }
+
+    // Sử dụng event delegation để handle dynamic content
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const button = target.closest('.add-to-variant');
+      
+      if (button) {
+        
+        const productId = button.getAttribute('data-product-id');
+        const productName = button.getAttribute('data-product-name');
+        const productImage = button.getAttribute('data-product-image');
+        const productSlug = button.getAttribute('data-product-slug');
+        const productPrice = button.getAttribute('data-product-price');
+
+        
+
+        if (productId) {
+          window.selectedProductId = productId;
+          
+          window.variants.loadProduct(productId).then(() => { 
+            
+            const popup = document.getElementById('variants-popup');
+            
+            popup?.classList.remove('hidden');
+          }).catch((error: any) => {
+            console.error('Error loading product:', error);
+          });
+        } else {
+          console.error('No product ID found');
+        }
+      }
+    });
+  };
+
+  // Hàm áp dụng tham số từ state vào form
+  const applyStateToForm = () => {
+    const state = window.history.state || {};
+    const form = document.getElementById('filter-form') as HTMLFormElement;
+    
+    // Áp dụng section
+    const section = state.section;
+    if (section) {
+      const sectionRadio = form.querySelector(`input[name="section"][value="${section}"]`) as HTMLInputElement;
+      if (sectionRadio) {
+        sectionRadio.checked = true;
+      }
+    }
+
+    // Áp dụng search
+    const search = state.search;
+    if (search) {
+      const searchInput = form.querySelector('#search') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.value = search;
+      }
+    }
+
+    // Áp dụng sort
+    const sort = state.sort;
+    if (sort) {
+      const sortSelect = form.querySelector('#sort') as HTMLSelectElement;
+      if (sortSelect) {
+        sortSelect.value = sort;
+      }
+    }
+
+    // Áp dụng price range
+    const minPrice = state.minPrice;
+    const maxPrice = state.maxPrice;
+    if (minPrice && maxPrice) {
+      const priceRangeSelect = form.querySelector('#priceRange') as HTMLSelectElement;
+      if (priceRangeSelect) {
+        const matchingOption = Array.from(priceRangeSelect.options).find(option => {
+          const [optionMin, optionMax] = option.value.split('-');
+          return optionMin === minPrice && optionMax === maxPrice;
+        });
+        if (matchingOption) {
+          priceRangeSelect.value = matchingOption.value;
+        }
+      }
+    }
+  };
+
+  // Hàm reset tất cả các giá trị
+  const resetAllValues = () => {
+    const form = document.getElementById('filter-form') as HTMLFormElement;
+    
+    // Reset section về "all"
+    const allSectionRadio = form.querySelector('input[name="section"][value="all"]') as HTMLInputElement;
+    if (allSectionRadio) {
+      allSectionRadio.checked = true;
+    }
+
+    // Reset search input
+    const searchInput = form.querySelector('#search') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.value = '';
+    }
+
+    // Reset sort về "newest"
+    const sortSelect = form.querySelector('#sort') as HTMLSelectElement;
+    if (sortSelect) {
+      sortSelect.value = 'newest';
+    }
+
+    // Reset price range về "Tất cả"
+    const priceRangeSelect = form.querySelector('#priceRange') as HTMLSelectElement;
+    if (priceRangeSelect) {
+      priceRangeSelect.value = '0-1000000000';
+    }
+
+    // Reset state
+    window.history.replaceState({}, '', window.location.pathname);
+  };
+
+  // Hàm khởi tạo trang
+  const initializePage = () => {
+    // Áp dụng tham số từ state vào form
+    // applyStateToForm();
+    
+    resetAllValues();
+    // Lấy tham số hiện tại và cập nhật nội dung
+    const params = getCurrentParams();
+    updateContent(params);
+  };
+
+  // Khởi tạo trang khi load
+  document.addEventListener('DOMContentLoaded', initializePage);
+
+  // Xử lý popstate event để cập nhật form khi người dùng sử dụng nút back/forward
+  window.addEventListener('popstate', (event) => {
+    applyStateToForm();
+    const params = getCurrentParams();
+    updateContent(params);
+  });
+
+  // Hàm debounce
+  const debounce = (func: Function, wait: number) => {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+
+  // Hàm xử lý tìm kiếm
+  const handleSearch = () => {
+    const params = getCurrentParams();
+    // Nếu ô tìm kiếm trống, reset search param
+    if (!searchInput.value.trim()) {
+      params.search = '';
+    }
+    params.page = '1'; // Reset về trang 1
+    updateContent(params);
+  };
+
+  // Tạo hàm debounce cho tìm kiếm
+  const debouncedSearch = debounce(handleSearch, 1000);
+
+  // Xử lý thay đổi tìm kiếm
+  const searchInput = document.getElementById('search') as HTMLInputElement;
+  let previousValue = searchInput.value; // Lưu giá trị trước đó
+  
+  // Xử lý khi người dùng gõ
+  searchInput.addEventListener('input', (e) => {
+    const currentValue = (e.target as HTMLInputElement).value;
+    
+    previousValue = currentValue;
+    debouncedSearch();
+  });
+  
+  // Xử lý khi người dùng xóa nội dung hoặc thay đổi giá trị
+  searchInput.addEventListener('change', (e) => {
+    const currentValue = (e.target as HTMLInputElement).value;
+    previousValue = currentValue;
+    // Nếu ô tìm kiếm trống, reset ngay lập tức
+    if (!currentValue.trim()) {
+      handleSearch();
+    } else {
+      debouncedSearch();
+    }
+  });
+
+  // Xử lý khi người dùng nhấn Enter
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch(); // Không dùng debounce cho Enter để tìm kiếm ngay lập tức
+    }
+  });
+
+  // Xử lý khi người dùng xóa nội dung bằng nút xóa của trình duyệt
+  searchInput.addEventListener('search', (e) => {
+    const currentValue = (e.target as HTMLInputElement).value;
+    
+    previousValue = currentValue;
+    // Khi xóa hết, reset ngay lập tức
+    handleSearch();
+  });
+
+  // Xử lý thay đổi danh mục
+  document.querySelectorAll('input[name="section"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      // Cập nhật class active cho label
+      document.querySelectorAll('label[data-section-label]').forEach(label => {
+        label.classList.remove('bg-primary', 'border-primary', 'text-white', 'font-semibold', 'shadow');
+        label.classList.add('bg-white', 'border-neutral');
+      });
+      const checked = document.querySelector('input[name="section"]:checked');
+      if (checked) {
+        const label = checked.closest('label[data-section-label]');
+        if (label) {
+          label.classList.add('bg-primary', 'border-primary', 'text-white', 'font-semibold', 'shadow');
+          label.classList.remove('bg-white', 'border-neutral');
+        }
+      }
+      const params = getCurrentParams();
+      params.page = '1'; // Reset về trang 1
+      updateContent(params);
+    });
+  });
+
+  // Xử lý thay đổi sắp xếp
+  const sortSelect = document.getElementById('sort') as HTMLSelectElement;
+  sortSelect.addEventListener('change', () => {
+    const params = getCurrentParams();
+    params.page = '1'; // Reset về trang 1
+    updateContent(params);
+  });
+
+  // Xử lý thay đổi khoảng giá
+  const priceRangeSelect = document.getElementById('priceRange') as HTMLSelectElement;
+  priceRangeSelect.addEventListener('change', () => {
+    const params = getCurrentParams();
+    params.page = '1'; // Reset về trang 1
+    updateContent(params);
+  });
+
+  // Xử lý thay đổi danh mục trên mobile (select)
+  const sectionSelectMobile = document.getElementById('section-select-mobile') as HTMLSelectElement;
+  if (sectionSelectMobile) {
+    sectionSelectMobile.addEventListener('change', () => {
+      const params = getCurrentParams();
+      params.section = sectionSelectMobile.value;
+      params.page = '1'; // Reset về trang 1
+      updateContent(params);
+    });
+  }
+
+  // Khởi tạo event listeners
+  addPaginationListeners();
+  addCartListeners();
+</script>
+<script>
+  const slider = document.getElementById('section-scroll');
+  if (slider) {
+    let isDown = false;
+    let startX: number;
+    let scrollLeft: number;
+
+    slider.addEventListener('mousedown', (e) => {
+      isDown = true;
+      slider.classList.add('active');
+      startX = e.pageX - slider.offsetLeft;
+      scrollLeft = slider.scrollLeft;
+    });
+    slider.addEventListener('mouseleave', () => {
+      isDown = false;
+      slider.classList.remove('active');
+    });
+    slider.addEventListener('mouseup', () => {
+      isDown = false;
+      slider.classList.remove('active');
+    });
+    slider.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - slider.offsetLeft;
+      const walk = (x - startX);
+      slider.scrollLeft = scrollLeft - walk;
+    });
+  }
+</script>
+<style>
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Responsive grid based on page layout settings */
+  #product-grid {
+    grid-template-columns: repeat(var(--products-per-row-mobile, 2), 1fr);
+  }
+  
+  @media (min-width: 640px) {
+    #product-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  @media (min-width: 768px) {
+    #product-grid {
+      grid-template-columns: repeat(var(--products-per-row, 4), 1fr) !important;
+    }
+  }
+  
+  /* Full width grid */
+  .full-width-grid {
+    max-width: none !important;
+    width: 100% !important;
+  }
+  
+  .full-width-grid .container {
+    max-width: none !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .full-width-grid .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .full-width-grid .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+</style>

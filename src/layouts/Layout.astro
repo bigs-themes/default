@@ -1,0 +1,504 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import AnnouncementBar from '../components/AnnouncementBar.astro';
+import CartPopup from '../components/cart/CartPopup.astro';
+import VariantsPopup from '../components/cart/VariantsPopup.astro';
+import LivePreviewManager from '../components/LivePreviewManager.astro';
+import { shopStyleService } from '../services/ShopStyleService';
+import '../assets/css/card-styles.css';
+import '../assets/css/button-styles.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+  currentPage?: string;
+}
+
+const { title, description = "BigS - Nền tảng thương mại điện tử hàng đầu Việt Nam", currentPage = 'home' } = Astro.props;
+
+// Check if we're in live preview mode
+const url = new URL(Astro.request.url);
+const isLivePreview = url.searchParams.has('preview') || url.searchParams.has('edit');
+// console.log('🔍 Server-side live preview check:', { 
+//   url: url.toString(), 
+//   hasPreview: url.searchParams.has('preview'),
+//   hasEdit: url.searchParams.has('edit'),
+//   isLivePreview 
+// });
+
+// Load shop style config from service
+let shopStyleConfig = null;
+// Extract shop ID from subdomain (e.g., shop1.localhost:4321 -> shop1)
+const host = Astro.request.headers.get('host') || '';
+const shopId = host.split('.')[0];
+// console.log('shopId:', shopId);
+
+try {
+  
+  if (!shopId || shopId === 'localhost' || shopId === '127') {
+    console.warn('No valid shop ID found in subdomain, skipping shop style config');
+  } else {
+    // Use ShopStyleService to load config
+    shopStyleConfig = await shopStyleService.getShopStyleConfig(shopId);
+  }
+} catch (error) {
+  console.warn('Failed to load shop style config:', error);
+}
+---
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 for notifications -->
+   
+    <link rel="stylesheet" href="https://unpkg.com/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <!-- Notification system -->
+    <script src="/src/utils/notify.js"></script>
+    
+    <title>{title}</title>
+    
+    <!-- Google Fonts -->
+    {shopStyleConfig?.settings?.fonts && (
+      <>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link 
+          href={`https://fonts.googleapis.com/css2?family=${shopStyleConfig.settings.fonts.heading}:wght@400;500;600;700&family=${shopStyleConfig.settings.fonts.body}:wght@400;500;600&display=swap`} 
+          rel="stylesheet" 
+        />
+      </>
+    )}
+  </head>
+  <body>
+    <div id="app">
+      <div style="background: #f0f0f0; padding: 10px; margin: 10px; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+        <strong>🔍 Debug Info:</strong><br/>
+        <strong>Server-side:</strong><br/>
+        isLivePreview: {isLivePreview}<br/>
+        URL: {url.toString()}<br/>
+        Search: {url.search}<br/>
+        Has Preview: {url.searchParams.has('preview')}<br/>
+        Has Edit: {url.searchParams.has('edit')}<br/>
+        Preview Value: {url.searchParams.get('preview')}<br/>
+        Edit Value: {url.searchParams.get('edit')}<br/>
+        Host: {Astro.request.headers.get('host')}<br/>
+        ShopId: {host.split('.')[0]}<br/>
+        <br/>
+        <strong>Client-side:</strong><br/>
+        <span id="client-debug-info">Loading...</span>
+      </div>
+      <AnnouncementBar 
+        visible={shopStyleConfig?.pageInterface?.announcementBarSettings?.visible ?? true}
+        content={shopStyleConfig?.pageInterface?.announcementBarSettings?.content ?? ''}
+        textColor={shopStyleConfig?.pageInterface?.announcementBarSettings?.textColor ?? '#ffffff'}
+        backgroundColor={shopStyleConfig?.pageInterface?.announcementBarSettings?.backgroundColor ?? '#000000'}
+        showOnHomepageOnly={shopStyleConfig?.pageInterface?.announcementBarSettings?.showOnHomepageOnly ?? false}
+        currentPage={currentPage}
+      />
+      <Header />
+      <main>
+        <slot />
+      </main>
+      <Footer />
+      <CartPopup />
+      <VariantsPopup />
+    </div>
+    
+    <LivePreviewManager />
+    
+  
+
+    <script define:vars={{ shopStyleConfig }}>
+      // Initialize window.app
+      if (typeof window !== 'undefined') {
+        window.app = window.app || {};
+        
+        // Debug URL on client side
+        // console.log('🔍 Client-side URL check:', {
+        //   href: window.location.href,
+        //   search: window.location.search,
+        //   pathname: window.location.pathname,
+        //   hasPreview: window.location.search.includes('preview'),
+        //   hasPreviewTrue: window.location.search.includes('preview=true'),
+        //   hasEdit: window.location.search.includes('edit'),
+        //   hasEditTrue: window.location.search.includes('edit=true')
+        // });
+        
+        // Update client debug info
+        const updateClientDebug = () => {
+          const clientDebugElement = document.getElementById('client-debug-info');
+          if (clientDebugElement) {
+            clientDebugElement.innerHTML = `
+              URL: ${window.location.href}<br/>
+              Search: ${window.location.search}<br/>
+              Has Preview: ${window.location.search.includes('preview')}<br/>
+              Has Edit: ${window.location.search.includes('edit')}<br/>
+              Is Live Preview: ${window.location.search.includes('preview=true') || window.location.search.includes('edit=true')}<br/>
+              <br/>
+              <strong>PostMessage State:</strong><br/>
+              Edit Mode: ${window.isEditMode || false}<br/>
+              Last Message: ${window.lastMessageType || 'None'}<br/>
+              Message Count: ${window.messageCount || 0}
+            `;
+          }
+        };
+        
+        // Update debug info immediately
+        updateClientDebug();
+        
+        // Update debug info every 2 seconds
+        setInterval(updateClientDebug, 2000);
+      }
+
+              // Apply initial style config from server
+        if (shopStyleConfig) {
+          const { colors, fonts, styles, layout } = shopStyleConfig;
+          
+          // Function to apply dynamic hover effects
+          function applyDynamicHoverEffects() {
+            // Apply button hover effects
+            const primaryHoverEffect = getComputedStyle(document.documentElement).getPropertyValue('--button-primary-hover-effect').trim();
+            const secondaryHoverEffect = getComputedStyle(document.documentElement).getPropertyValue('--button-secondary-hover-effect').trim();
+            const cardHoverEffect = getComputedStyle(document.documentElement).getPropertyValue('--card-hover-effect').trim();
+            
+            // Add event listeners for dynamic hover effects
+            document.addEventListener('DOMContentLoaded', () => {
+              // Primary button hover effects
+              document.querySelectorAll('.btn-primary').forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                  if (primaryHoverEffect === 'scale') {
+                    btn.style.transform = 'scale(1.05)';
+                  } else if (primaryHoverEffect === 'invert') {
+                    btn.style.filter = 'invert(1)';
+                  } else if (primaryHoverEffect === 'darken') {
+                    btn.style.filter = 'brightness(0.8)';
+                  }
+                });
+                
+                btn.addEventListener('mouseleave', () => {
+                  btn.style.transform = '';
+                  btn.style.filter = '';
+                });
+              });
+              
+              // Secondary button hover effects
+              document.querySelectorAll('.btn-secondary').forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                  if (secondaryHoverEffect === 'scale') {
+                    btn.style.transform = 'scale(1.05)';
+                  } else if (secondaryHoverEffect === 'invert') {
+                    btn.style.filter = 'invert(1)';
+                  } else if (secondaryHoverEffect === 'darken') {
+                    btn.style.filter = 'brightness(0.8)';
+                  }
+                });
+                
+                btn.addEventListener('mouseleave', () => {
+                  btn.style.transform = '';
+                  btn.style.filter = '';
+                });
+              });
+              
+              // Card hover effects
+              document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                  if (cardHoverEffect === 'lift') {
+                    card.style.transform = 'translateY(-4px)';
+                    card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+                  } else if (cardHoverEffect === 'shadow') {
+                    card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+                  } else if (cardHoverEffect === 'scale') {
+                    card.style.transform = 'scale(1.02)';
+                  }
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                  card.style.transform = '';
+                  card.style.boxShadow = '';
+                });
+              });
+            });
+          }
+        
+        // Update CSS variables for colors
+        if (colors) {
+          document.documentElement.style.setProperty('--color-primary', colors.primary || '');
+          document.documentElement.style.setProperty('--color-secondary', colors.secondary || '');
+          document.documentElement.style.setProperty('--color-neutral', colors.neutral || '');
+          document.documentElement.style.setProperty('--color-semantic', colors.semantic || '');
+          document.documentElement.style.setProperty('--color-background', colors.background || '');
+          document.documentElement.style.setProperty('--color-surface', colors.surface || '');
+          document.documentElement.style.setProperty('--color-text', colors.text || '');
+          document.documentElement.style.setProperty('--color-text-secondary', colors.textSecondary || '');
+        }
+        
+        // Update CSS variables for fonts
+        if (fonts) {
+          document.documentElement.style.setProperty('--font-heading', fonts.heading || 'Inter');
+          document.documentElement.style.setProperty('--font-body', fonts.body || 'Inter');
+        }
+        
+        // Update CSS variables for button styles
+        if (styles?.button) {
+          const primary = styles.button.primary;
+          const secondary = styles.button.secondary;
+          
+          // Primary button styles - using new flat format
+          document.documentElement.style.setProperty('--button-primary-background', primary.bg || '#1e90ff');
+          document.documentElement.style.setProperty('--button-primary-text', primary.text || '#ffffff');
+          document.documentElement.style.setProperty('--button-primary-border', `1px solid ${primary.border || '#1e90ff'}`);
+          document.documentElement.style.setProperty('--button-primary-border-radius', primary.radius || '8px');
+          document.documentElement.style.setProperty('--button-primary-shadow', primary.shadow || '0 2px 4px rgba(0,0,0,0.1)');
+          document.documentElement.style.setProperty('--button-primary-padding', primary.padding || '12px 24px');
+          document.documentElement.style.setProperty('--button-primary-font-size', primary.fontSize || '16px');
+          document.documentElement.style.setProperty('--button-primary-hover-background', primary.hoverBg || '#1c86ee');
+          document.documentElement.style.setProperty('--button-primary-hover-text', primary.hoverText || '#ffffff');
+          document.documentElement.style.setProperty('--button-primary-hover-effect', primary.hoverEffect || 'scale');
+          
+          // Secondary button styles - using new flat format
+          document.documentElement.style.setProperty('--button-secondary-background', secondary.bg || '#f0f0f0');
+          document.documentElement.style.setProperty('--button-secondary-text', secondary.text || '#333333');
+          document.documentElement.style.setProperty('--button-secondary-border', `1px solid ${secondary.border || '#cccccc'}`);
+          document.documentElement.style.setProperty('--button-secondary-border-radius', secondary.radius || '6px');
+          document.documentElement.style.setProperty('--button-secondary-shadow', secondary.shadow || 'none');
+          document.documentElement.style.setProperty('--button-secondary-padding', secondary.padding || '10px 20px');
+          document.documentElement.style.setProperty('--button-secondary-font-size', secondary.fontSize || '14px');
+          document.documentElement.style.setProperty('--button-secondary-hover-background', secondary.hoverBg || '#e0e0e0');
+          document.documentElement.style.setProperty('--button-secondary-hover-text', secondary.hoverText || '#000000');
+          document.documentElement.style.setProperty('--button-secondary-hover-effect', secondary.hoverEffect || 'darken');
+        }
+        
+        // Update CSS variables for card styles - using new flat format
+        if (styles?.card?.default) {
+          const card = styles.card.default;
+          document.documentElement.style.setProperty('--card-background', card.bg || '#ffffff');
+          document.documentElement.style.setProperty('--card-border', card.border || '1px solid #eeeeee');
+          document.documentElement.style.setProperty('--card-border-radius', card.radius || '12px');
+          document.documentElement.style.setProperty('--card-shadow', card.shadow || '0 2px 8px rgba(0,0,0,0.05)');
+          document.documentElement.style.setProperty('--card-hover-effect', card.hoverEffect || 'lift');
+        }
+        
+        // Update CSS variables for form field styles
+        if (styles?.formField?.input) {
+          const input = styles.formField.input;
+          document.documentElement.style.setProperty('--input-background', input.background || '#ffffff');
+          document.documentElement.style.setProperty('--input-text', input.text || '#333333');
+          document.documentElement.style.setProperty('--input-border', `${input.border.width} ${input.border.style} ${input.border.color}`);
+          document.documentElement.style.setProperty('--input-border-radius', input.borderRadius || '6px');
+          document.documentElement.style.setProperty('--input-shadow', input.boxShadow || 'inset 0 1px 2px rgba(0,0,0,0.05)');
+          document.documentElement.style.setProperty('--input-hover-effect', input.hoverEffect || 'focusRing');
+        }
+        
+        if (layout) {
+          document.documentElement.style.setProperty('--layout-style', layout);
+        }
+        
+        // Apply dynamic hover effects
+        applyDynamicHoverEffects();
+      }
+
+      // Apply CSS variables to document
+      const style = document.createElement('style');
+      style.textContent = `
+        :root {
+          --color-primary: ${shopStyleConfig?.settings?.colors?.primary || '#3B82F6'};
+          --color-secondary: ${shopStyleConfig?.settings?.colors?.secondary || '#10B981'};
+          --color-neutral: ${shopStyleConfig?.settings?.colors?.neutral || '#6B7280'};
+          --color-semantic: ${shopStyleConfig?.settings?.colors?.semantic || '#F59E0B'};
+          --color-background: ${shopStyleConfig?.settings?.colors?.background || '#FFFFFF'};
+          --color-surface: ${shopStyleConfig?.settings?.colors?.surface || '#F9FAFB'};
+          --color-text: ${shopStyleConfig?.settings?.colors?.text || '#111827'};
+          --color-text-secondary: ${shopStyleConfig?.settings?.colors?.textSecondary || '#6B7280'};
+          --font-heading: ${shopStyleConfig?.settings?.fonts?.heading || 'Inter'};
+          --font-body: ${shopStyleConfig?.settings?.fonts?.body || 'Inter'};
+          --button-primary-background: ${shopStyleConfig?.settings?.styles?.button?.primary?.bg || '#1e90ff'};
+          --button-primary-text: ${shopStyleConfig?.settings?.styles?.button?.primary?.text || '#ffffff'};
+          --button-primary-border: 1px solid ${shopStyleConfig?.settings?.styles?.button?.primary?.border || '#1e90ff'};
+          --button-primary-border-radius: ${shopStyleConfig?.settings?.styles?.button?.primary?.radius || '8px'};
+          --button-primary-shadow: ${shopStyleConfig?.settings?.styles?.button?.primary?.shadow || '0 2px 4px rgba(0,0,0,0.1)'};
+          --button-primary-padding: ${shopStyleConfig?.settings?.styles?.button?.primary?.padding || '12px 24px'};
+          --button-primary-font-size: ${shopStyleConfig?.settings?.styles?.button?.primary?.fontSize || '16px'};
+          --button-primary-hover-background: ${shopStyleConfig?.settings?.styles?.button?.primary?.hoverBg || '#1c86ee'};
+          --button-primary-hover-text: ${shopStyleConfig?.settings?.styles?.button?.primary?.hoverText || '#ffffff'};
+          --button-primary-hover-effect: ${shopStyleConfig?.settings?.styles?.button?.primary?.hoverEffect || 'scale'};
+          --button-secondary-background: ${shopStyleConfig?.settings?.styles?.button?.secondary?.bg || '#f0f0f0'};
+          --button-secondary-text: ${shopStyleConfig?.settings?.styles?.button?.secondary?.text || '#333333'};
+          --button-secondary-border: 1px solid ${shopStyleConfig?.settings?.styles?.button?.secondary?.border || '#cccccc'};
+          --button-secondary-border-radius: ${shopStyleConfig?.settings?.styles?.button?.secondary?.radius || '6px'};
+          --button-secondary-shadow: ${shopStyleConfig?.settings?.styles?.button?.secondary?.shadow || 'none'};
+          --button-secondary-padding: ${shopStyleConfig?.settings?.styles?.button?.secondary?.padding || '10px 20px'};
+          --button-secondary-font-size: ${shopStyleConfig?.settings?.styles?.button?.secondary?.fontSize || '14px'};
+          --button-secondary-hover-background: ${shopStyleConfig?.settings?.styles?.button?.secondary?.hoverBg || '#e0e0e0'};
+          --button-secondary-hover-text: ${shopStyleConfig?.settings?.styles?.button?.secondary?.hoverText || '#000000'};
+          --button-secondary-hover-effect: ${shopStyleConfig?.settings?.styles?.button?.secondary?.hoverEffect || 'darken'};
+          --card-background: ${shopStyleConfig?.settings?.styles?.card?.default?.bg || '#ffffff'};
+          --card-border-radius: ${shopStyleConfig?.settings?.styles?.card?.default?.radius || '12px'};
+        }
+        
+        body {
+          font-family: var(--font-body), system-ui, sans-serif;
+          color: var(--color-text);
+          background-color: var(--color-background);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+          font-family: var(--font-heading), system-ui, sans-serif;
+        }
+        
+        .btn-primary {
+          background-color: var(--button-primary-background);
+          color: var(--button-primary-text);
+          border-radius: var(--button-primary-border-radius);
+          padding: var(--button-primary-padding, 12px 24px);
+          font-size: var(--button-primary-font-size, 16px);
+          border: var(--button-primary-border, 1px solid transparent);
+          box-shadow: var(--button-primary-shadow, 0 2px 4px rgba(0,0,0,0.1));
+          transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-secondary {
+          background-color: var(--button-secondary-background);
+          color: var(--button-secondary-text);
+          border-radius: var(--button-secondary-border-radius);
+          padding: var(--button-secondary-padding, 10px 20px);
+          font-size: var(--button-secondary-font-size, 14px);
+          border: var(--button-secondary-border, 1px solid #cccccc);
+          box-shadow: var(--button-secondary-shadow, none);
+          transition: all 0.2s ease-in-out;
+        }
+        
+        .card {
+          background-color: var(--card-background, #ffffff);
+          border-radius: var(--card-border-radius, 12px);
+          border: var(--card-border, 1px solid #eeeeee);
+          box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,0.05));
+          transition: all 0.2s ease-in-out;
+        }
+      `;
+      document.head.appendChild(style);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.22.2/sweetalert2.min.js" integrity="sha512-2bCb2rCmddSPBLbYUoGR9R+gmLU/kaoYiTM4OVG3Jz+6E26MTzdozuEYt5j3X60ueQ9x6Xufz7y3jhmrHiHLZg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  </body>
+</html>
+
+<style is:global>
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: var(--font-body), 'Inter', system-ui, sans-serif;
+  }
+  
+  /* Smooth transitions for hover effects */
+  a, button {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* CSS Variables for dynamic styling */
+  :root {
+    --color-primary: #FF6B6B;
+    --color-secondary: #4ECDC4;
+    --color-neutral: #45B7D1;
+    --color-semantic: #96CEB4;
+    --font-heading: 'Inter';
+    --font-body: 'Inter';
+    --button-primary-background: #1e90ff;
+    --button-primary-text: #ffffff;
+    --button-primary-border: 1px solid #1e90ff;
+    --button-primary-border-radius: 8px;
+    --button-primary-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --button-primary-padding: 12px 24px;
+    --button-primary-font-size: 16px;
+    --button-primary-hover-background: #1c86ee;
+    --button-primary-hover-text: #ffffff;
+    --button-primary-hover-effect: scale;
+    --button-secondary-background: #f0f0f0;
+    --button-secondary-text: #333333;
+    --button-secondary-border: 1px solid #cccccc;
+    --button-secondary-border-radius: 6px;
+    --button-secondary-shadow: none;
+    --button-secondary-padding: 10px 20px;
+    --button-secondary-font-size: 14px;
+    --button-secondary-hover-background: #e0e0e0;
+    --button-secondary-hover-text: #000000;
+    --button-secondary-hover-effect: darken;
+    --card-background: #ffffff;
+    --card-border: 1px solid #eeeeee;
+    --card-border-radius: 12px;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    --card-hover-effect: lift;
+    --input-background: #ffffff;
+    --input-text: #333333;
+    --input-border: 1px solid #dddddd;
+    --input-border-radius: 6px;
+    --input-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    --input-hover-effect: focusRing;
+    --layout-style: 'layoutA';
+  }
+
+  /* Apply fonts to elements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading), 'Inter', system-ui, sans-serif;
+  }
+  
+  .font-heading { font-family: var(--font-heading), 'Inter', system-ui, sans-serif; }
+  .font-body { font-family: var(--font-body), 'Inter', system-ui, sans-serif; }
+
+  /* Utility classes for colors */
+  .bg-primary { background-color: var(--color-primary); }
+  .bg-secondary { background-color: var(--color-secondary); }
+  .bg-neutral { background-color: var(--color-neutral); }
+  .bg-semantic { background-color: var(--color-semantic); }
+  
+  .text-primary { color: var(--color-primary); }
+  .text-secondary { color: var(--color-secondary); }
+  .text-neutral { color: var(--color-neutral); }
+  .text-semantic { color: var(--color-semantic); }
+  
+  .border-primary { border-color: var(--color-primary); }
+  .border-secondary { border-color: var(--color-secondary); }
+  .border-neutral { border-color: var(--color-neutral); }
+  .border-semantic { border-color: var(--color-semantic); }
+
+  /* Button style utility classes - removed duplicate, using button-styles.css instead */
+
+  /* Card style utility classes */
+  .card {
+    background-color: var(--card-background);
+    border-radius: var(--card-border-radius);
+    border: var(--card-border);
+    box-shadow: var(--card-shadow);
+    padding: 1rem;
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Form field utility classes */
+  .form-input {
+    background-color: var(--input-background);
+    color: var(--input-text);
+    border: var(--input-border);
+    border-radius: var(--input-border-radius);
+    box-shadow: var(--input-shadow);
+    padding: 0.5rem 0.75rem;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+</style>

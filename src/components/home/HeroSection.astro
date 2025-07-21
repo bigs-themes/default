@@ -1,0 +1,114 @@
+---
+import { Button } from '@/components/ui';
+---
+
+<section class="relative overflow-hidden">
+  <!-- Background image with overlay -->
+  <div class="relative h-[60vh] md:h-[70vh] w-full bg-gradient-to-r from-primary to-secondary">
+    <div class="absolute inset-0 overflow-hidden">
+      <img 
+        src="https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg" 
+        alt="Hero background" 
+        class="w-full h-full object-cover object-center opacity-40"
+      />
+    </div>
+    
+    <div class="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent"></div>
+    
+    <!-- Content -->
+    <div class="relative max-w-screen-xl mx-auto px-4 sm:px-6 h-full flex items-center">
+      <div class="max-w-xl">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4">
+          Mua sắm thông minh, <br/>
+          <span class="text-primary">tiết kiệm thời gian</span>
+        </h1>
+        <p class="text-xl text-white/90 mb-8">
+          Khám phá hàng ngàn sản phẩm chất lượng cao với giá ưu đãi đặc biệt hôm nay.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <Button 
+            variant="primary" 
+            size="lg"
+            onclick="window.location.href='/san-pham'"
+          >
+            Mua sắm ngay
+          </Button>
+          <Button 
+            variant="secondary" 
+            size="lg"
+            onclick="window.location.href='/khuyen-mai'"
+          >
+            Xem khuyến mãi
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Bottom Bar - Categories quick links -->
+  <!-- <div class="bg-neutral shadow-md py-4 relative z-10">
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6">
+      <div class="flex overflow-x-auto space-x-8 pb-2 scrollbar-hide">
+        <a href="/san-pham/dien-thoai" class="flex flex-col items-center min-w-[80px] group">
+          <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+            </svg>
+          </div>
+          <span class="text-xs text-neutral group-hover:text-primary">Điện thoại</span>
+        </a>
+        <a href="/san-pham/laptop" class="flex flex-col items-center min-w-[80px] group">
+          <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+            </svg>
+          </div>
+          <span class="text-xs text-neutral group-hover:text-primary">Laptop</span>
+        </a>
+        <a href="/san-pham/thoi-trang" class="flex flex-col items-center min-w-[80px] group">
+          <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+          </div>
+          <span class="text-xs text-neutral group-hover:text-primary">Thời trang</span>
+        </a>
+        <a href="/san-pham/do-gia-dung" class="flex flex-col items-center min-w-[80px] group">
+          <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1A3.75 3.75 0 0012 18z" />
+            </svg>
+          </div>
+          <span class="text-xs text-neutral group-hover:text-primary">Đồ gia dụng</span>
+        </a>
+        <a href="/san-pham/my-pham" class="flex flex-col items-center min-w-[80px] group">
+          <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            </svg>
+          </div>
+          <span class="text-xs text-neutral group-hover:text-primary">Mỹ phẩm</span>
+        </a>
+        <a href="/san-pham/sach" class="flex flex-col items-center min-w-[80px] group">
+          <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+            </svg>
+          </div>
+          <span class="text-xs text-neutral group-hover:text-primary">Sách</span>
+        </a>
+      </div>
+    </div>
+  </div> -->
+</section>
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>

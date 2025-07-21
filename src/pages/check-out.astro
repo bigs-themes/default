@@ -1,0 +1,482 @@
+---
+import Layout from '../layouts/Layout.astro';
+import crypto from 'crypto';
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    maximumFractionDigits: 0
+  }).format(price);
+};
+
+// Sinh CSRF token ở server và set vào cookie
+const csrfToken = crypto.randomBytes(32).toString('hex');
+Astro.cookies.set('csrfToken', csrfToken, {
+  path: '/',
+  httpOnly: true,
+  sameSite: 'strict',
+});
+
+const url = new URL(Astro.request.url);
+const host = url.hostname;
+const shopId = host ? host.split('.')[0] : '';
+---
+
+<Layout title="Thanh toán - BigS">
+  <form id="checkout-form" >
+  <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="flex flex-col lg:flex-row gap-8">
+        <!-- LEFT: Thông tin nhận hàng, Vận chuyển, Thanh toán -->
+        <div class="flex-1 bg-white rounded-lg shadow p-4">
+          <span class="text-4xl font-bold text-primary-600">BigS</span>
+          <div class="font-semibold text-lg my-4">Thông tin nhận hàng</div>
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-4 mb-8">
+            <div class="col-span-2 md:col-span-1">
+              <div class="relative">
+                <input name="buyerEmail" id="buyerEmail" type="email" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                <label for="buyerEmail" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Email</label>
+              </div>
+              <p id="error-buyerEmail" class="text-[11px] text-red-500"></p>
+            </div>
+            <div class="col-span-2 md:col-span-1">
+              <div class="relative">
+                <input name="buyerName" id="buyerName" type="text" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                <label for="buyerName" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Họ và tên</label>
+              </div>
+              <p id="error-buyerName" class="text-[11px] text-red-500"></p>
+            </div>
+            <div class="col-span-2 md:col-span-1">
+              <div class="relative">
+                <input name="buyerPhone" id="buyerPhone" type="tel" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                <label for="buyerPhone" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Số điện thoại</label>
+                <!-- <span class="absolute right-2 top-3 text-gray-400 bg-gray-50 px-1 text-xs flex items-center">+84</span> -->
+              </div>
+              <p id="error-buyerPhone" class="text-[11px] text-red-500"></p>
+            </div>
+            <div class="col-span-2 md:col-span-1">
+              <div class="relative">
+                <select name="province" id="province" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" required>
+                  <option value="">Vui lòng chọn Tỉnh thành</option>
+                </select>
+                <label for="province" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Tỉnh thành</label>
+              </div>
+              <p id="error-province" class="text-[11px] text-red-500"></p>
+            </div>
+            <div class="col-span-2 md:col-span-1">
+              <div class="relative">
+                <select name="district" id="district" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" required>
+                  <option value="">Vui lòng chọn Quận huyện</option>
+                </select>
+                <label for="district" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Quận huyện</label>
+              </div>
+              <p id="error-district" class="text-[11px] text-red-500"></p>
+            </div>
+            <div class="col-span-2 md:col-span-1">
+              <div class="relative">
+                <select name="ward" id="ward" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" required>
+                  <option value="">Vui lòng chọn Phường xã</option>
+                </select>
+                <label for="ward" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Phường xã</label>
+              </div>
+              <p id="error-ward" class="text-[11px] text-red-500"></p>
+            </div>
+            <div class="col-span-2">
+              <div class="relative">
+                <input name="buyerAddress" id="buyerAddress" type="text" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+                <label for="buyerAddress" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Số nhà, tên đường</label>
+              </div>
+              <p id="error-buyerAddress" class="text-[11px] text-red-500"></p>
+            </div>
+            <div class="col-span-2">
+              <div class="relative">
+                <textarea name="buyerNotes" id="buyerNotes" rows="2" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" "></textarea>
+                <label for="buyerNotes" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Ghi chú (tùy chọn)</label>
+              </div>
+            </div>
+            <input type="hidden" name="csrfToken" value={csrfToken} />
+            <input type="hidden" name="shopId" value={shopId} />
+            <input type="hidden" name="shippingDetails" value="Giao hàng nhanh" />
+            <input type="hidden" name="shippingFee" value="0" />
+          </div>
+          <div class="font-semibold text-lg mb-2">Vận chuyển</div>
+          <div class="bg-primary-50 text-primary-700 px-4 py-2 rounded mb-6">Vui lòng nhập thông tin giao hàng</div>
+          <div class="font-semibold text-lg mb-2">Thanh toán</div>
+          <div class="space-y-3">
+            <label class="flex items-center gap-2 border rounded px-4 py-2 cursor-not-allowed opacity-50">
+              <input type="radio" name="paymentMethod" disabled class="accent-primary-600" />
+              <span>Chuyển khoản qua ngân hàng (VietQR)</span>
+              <!-- <img src="/vietqr.png" alt="VietQR" class="h-5 ml-2" /> -->
+            </label>
+            <label class="flex items-center gap-2 border rounded px-4 py-2 cursor-not-allowed opacity-50">
+              <input type="radio" name="paymentMethod" disabled class="accent-primary-600" />
+              <span>Payoo - Thanh toán online, trả góp 0% lãi suất qua thẻ Visa, Master, JCB, Amex</span>
+              <!-- <img src="/payoo.png" alt="Payoo" class="h-5 ml-2" /> -->
+            </label>
+            <label class="flex items-center gap-2 border rounded px-4 py-2 cursor-pointer">
+              <input type="radio" name="paymentMethod" value="COD" checked class="accent-primary-600" />
+              <span>Thanh toán khi giao hàng (COD)</span>
+              <span class="bg-primary-500 text-white rounded px-2 py-1 text-xs ml-2">COD</span>
+            </label>
+            <label class="flex items-center gap-2 border rounded px-4 py-2 cursor-not-allowed opacity-50">
+              <input type="radio" name="paymentMethod" disabled class="accent-primary-600" />
+              <span>Fundiin - Mua trả sau 0% lãi</span>
+              <span class="bg-yellow-100 text-yellow-700 rounded px-2 py-0.5 text-xs ml-2">Giảm đến 50K</span>
+              <!-- <img src="/fundiin.png" alt="Fundiin" class="h-5 ml-2" /> -->
+            </label>
+          </div>
+        </div>
+        <!-- RIGHT: Đơn hàng -->
+        <div id="checkout-cart-items" class="w-full lg:w-[380px] bg-white rounded-lg shadow p-4"></div>
+      </div>
+  </div>
+  </form>
+</Layout>
+
+<script>
+  // Định nghĩa types
+  interface CartItem {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    image: string;
+    variant: string;
+  }
+
+  interface Province {
+    Code: string;
+    Name: string;
+    FullName: string;
+    District: District[];
+  }
+
+  interface District {
+    Code: string;
+    Name: string;
+    FullName: string;
+    Ward: Ward[];
+  }
+
+  interface Ward {
+    Code: string;
+    Name: string;
+    FullName: string;
+  }
+
+  // Hàm format tiền
+  const formatPrice = (price: number): string => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
+  function renderCheckoutCart(): void {
+    // Lấy cart từ window.cart hoặc localStorage
+    let cart: CartItem[] = [];
+    if (typeof window !== 'undefined' && (window as any).cart?.items) {
+      cart = (window as any).cart.items;
+    } else {
+      const saved = localStorage.getItem('cart');
+      cart = saved ? JSON.parse(saved) : [];
+    }
+    
+    const container = document.getElementById('checkout-cart-items');
+    if (!container) return;
+
+    if (!cart.length) {
+      container.innerHTML = '<div class="text-center text-gray-500 py-8">Giỏ hàng trống</div>';
+      return;
+    }
+
+    let total = cart.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
+
+    container.innerHTML = `
+      <div class="font-semibold text-lg mb-4">Đơn hàng (${cart.length} sản phẩm)</div>
+      <div class="divide-y border-b mb-4">
+        ${cart.map((item: CartItem) => `
+          <div class="flex items-center gap-3 py-3">
+            <img src="${item.image}" alt="${item.name}" class="w-12 h-12 rounded object-cover" />
+            <div class="flex-1">
+              <div class="font-medium text-sm">${item.name}</div>
+              <div class="text-xs text-gray-500">${item.variant}</div>
+              <div class="text-xs text-gray-500">x${item.quantity}</div>
+            </div>
+            <div class="font-semibold text-primary-700">${formatPrice(item.price)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="flex gap-2 mb-4">
+         <div class="w-full">
+          <div class="relative">
+            <input name="coupon" id="coupon" type="text" class="block rounded px-2.5 pb-1.5 pt-4 w-full text-sm text-gray-900 bg-gray-50 border appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+            <label for="coupon" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-3 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3">Nhập mã giảm giá</label>
+          </div>
+          <p id="error-coupon" class="text-xs text-red-500"></p>
+        </div>
+        <button type="button" class="w-1/3 bg-primary-50 text-primary-700 px-4 rounded font-semibold">Áp dụng</button>
+      </div>
+      <div class="flex justify-between mb-1">
+        <span class="text-gray-600">Tạm tính</span>
+        <span class="text-gray-900 font-medium">${formatPrice(total)}</span>
+      </div>
+      <div class="flex justify-between mb-1">
+        <span class="text-gray-600">Phí vận chuyển</span>
+        <span class="text-gray-900 font-medium">-</span>
+      </div>
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-semibold">Tổng cộng</span>
+        <span class="text-primary-700 text-xl font-bold">${formatPrice(total)}</span>
+      </div>
+      <a href="/gio-hang" class="text-primary-700 text-sm hover:underline mb-3 inline-block">&lt; Quay về giỏ hàng</a>
+      <button id="checkout-submit" class="w-full bg-primary-700 hover:bg-primary-800 text-white font-bold py-3 rounded mt-2" type="button">ĐẶT HÀNG</button>
+    `;
+  }
+
+  document.addEventListener('DOMContentLoaded', renderCheckoutCart);
+
+  document.addEventListener('DOMContentLoaded', () => {
+   
+    const form = document.getElementById('checkout-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('checkout-submit') as HTMLButtonElement;
+    // console.log('form:', form);
+    // Lấy input và error
+    const buyerNameInput = document.getElementById('buyerName') as HTMLInputElement;
+    const errorBuyerName = document.getElementById('error-buyerName') as HTMLParagraphElement;
+    const buyerPhoneInput = document.getElementById('buyerPhone') as HTMLInputElement;
+    const errorBuyerPhone = document.getElementById('error-buyerPhone') as HTMLParagraphElement;
+    const buyerEmailInput = document.getElementById('buyerEmail') as HTMLInputElement;
+    const errorBuyerEmail = document.getElementById('error-buyerEmail') as HTMLParagraphElement;
+    const buyerAddressInput = document.getElementById('buyerAddress') as HTMLInputElement;
+    const errorBuyerAddress = document.getElementById('error-buyerAddress') as HTMLParagraphElement;
+
+    // Xóa lỗi khi sửa input
+    buyerNameInput?.addEventListener('input', () => { if (errorBuyerName) errorBuyerName.textContent = ''; });
+    buyerPhoneInput?.addEventListener('input', () => { if (errorBuyerPhone) errorBuyerPhone.textContent = ''; });
+    buyerEmailInput?.addEventListener('input', () => { if (errorBuyerEmail) errorBuyerEmail.textContent = ''; });
+    buyerAddressInput?.addEventListener('input', () => { if (errorBuyerAddress) errorBuyerAddress.textContent = ''; });
+    // Xóa lỗi khi sửa select
+    const provinceSelect = document.getElementById('province') as HTMLSelectElement;
+    const districtSelect = document.getElementById('district') as HTMLSelectElement;
+    const wardSelect = document.getElementById('ward') as HTMLSelectElement;
+    const errorProvince = document.getElementById('error-province') as HTMLParagraphElement;
+    const errorDistrict = document.getElementById('error-district') as HTMLParagraphElement;
+    const errorWard = document.getElementById('error-ward') as HTMLParagraphElement;
+    
+    provinceSelect?.addEventListener('change', () => { if (errorProvince) errorProvince.textContent = ''; });
+    districtSelect?.addEventListener('change', () => { if (errorDistrict) errorDistrict.textContent = ''; });
+    wardSelect?.addEventListener('change', () => { if (errorWard) errorWard.textContent = ''; });
+
+    submitBtn?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!form) return;
+      // Lấy dữ liệu form
+      const formData = new FormData(form);
+      // Lấy cart
+      let cart: CartItem[] = [];
+      if (typeof window !== 'undefined' && (window as any).cart?.items) {
+        cart = (window as any).cart.items;
+      } else {
+        const saved = localStorage.getItem('cart');
+        cart = saved ? JSON.parse(saved) : [];
+      }
+      
+      if (!cart.length) {
+        if (typeof window !== 'undefined' && (window as any).app?.toggleNotification) {
+          (window as any).app.toggleNotification({
+            state: true,
+            level: 'error',
+            message: 'Giỏ hàng trống!',
+            title: '',
+            timer: 8000,
+          });
+        }
+        return;
+      }
+      // Validate nâng cao
+      let hasError = false;
+      const buyerName = formData.get('buyerName')?.toString().trim() || '';
+      const buyerPhone = formData.get('buyerPhone')?.toString().trim() || '';
+      const buyerEmail = formData.get('buyerEmail')?.toString().trim() || '';
+      const buyerAddress = formData.get('buyerAddress')?.toString().trim() || '';
+      // Validate tên
+      if (buyerName.length < 2) {
+        if (errorBuyerName) errorBuyerName.textContent = 'Họ và tên phải có ít nhất 2 ký tự!';
+        hasError = true;
+      }
+      // Validate số điện thoại
+      if (!/^[0-9]{9,11}$/.test(buyerPhone)) {
+        if (errorBuyerPhone) errorBuyerPhone.textContent = 'Số điện thoại không hợp lệ!';
+        hasError = true;
+      }
+      // Validate email
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(buyerEmail)) {
+        if (errorBuyerEmail) errorBuyerEmail.textContent = 'Email không hợp lệ!';
+        hasError = true;
+      }
+      // Validate địa chỉ
+      if (buyerAddress.length < 5) {
+        if (errorBuyerAddress) errorBuyerAddress.textContent = 'Địa chỉ phải có ít nhất 5 ký tự!';
+        hasError = true;
+      }
+      // Validate tỉnh/huyện/xã
+      const provinceCode = formData.get('province');
+      const districtCode = formData.get('district');
+      const wardCode = formData.get('ward');
+      const province = provincesData.find((p: Province) => p.Code === provinceCode);
+      const district = province?.District.find((d: District) => d.Code === districtCode);
+      const ward = district?.Ward.find((w: Ward) => w.Code === wardCode);
+      const provinceName = province?.FullName || '';
+      const districtName = district?.FullName || '';
+      const wardName = ward?.FullName || '';
+      // console.log('provinceName:', provinceName);
+      // console.log('districtName:', districtName);
+      // console.log('wardName:', wardName);
+
+      // Validate tỉnh/huyện/xã
+      if (!provinceCode) {
+        if (errorProvince) errorProvince.textContent = 'Vui lòng chọn tỉnh/thành!';
+        hasError = true;
+      }
+      if (!districtCode) {
+        if (errorDistrict) errorDistrict.textContent = 'Vui lòng chọn quận/huyện!';
+        hasError = true;
+      }
+      if (!wardCode) {
+        if (errorWard) errorWard.textContent = 'Vui lòng chọn phường/xã!';
+        hasError = true;
+      }
+
+      if (hasError) return;
+      // Nối địa chỉ đầy đủ
+      const fullAddress = `${buyerAddress}, ${wardName}, ${districtName}, ${provinceName}, Việt Nam`;
+      formData.set('buyerAddress', fullAddress);
+      // Thêm products (JSON) vào formData
+      formData.set('products', JSON.stringify(cart));
+      // Gửi API bằng FormData
+      const btn = submitBtn;
+      btn.disabled = true;
+      btn.textContent = 'Đang xử lý...';
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          if (typeof window !== 'undefined' && (window as any).app?.toggleNotification) {
+            (window as any).app.toggleNotification({
+              state: true,
+              level: 'success',
+              message: 'Đặt hàng thành công! Mã đơn: ' + result.orderId,
+              title: '',
+              timer: 8000,
+            });
+          }
+          localStorage.removeItem('cart'); // Xóa giỏ hàng sau khi đặt hàng thành công
+          // console.log('result:', result);
+          setTimeout(() => {
+            // console.log('result:', result);
+            window.location.href = `/cam-on?orderId=${result.orderId}`;
+          }, 1000);
+        } else {
+          if (typeof window !== 'undefined' && (window as any).app?.toggleNotification) {
+            (window as any).app.toggleNotification({
+              state: true,
+              level: 'error',
+              message: result.error || 'Có lỗi xảy ra!',
+              title: '',
+              timer: 8000,
+            });
+          }
+        }
+      } catch (err) {
+        if (typeof window !== 'undefined' && (window as any).app?.toggleNotification) {
+          (window as any).app.toggleNotification({
+            state: true,
+            level: 'error',
+            message: 'Lỗi kết nối máy chủ!',
+            title: '',
+            timer: 8000,
+          });
+        }
+      }
+      btn.disabled = false;
+      btn.textContent = 'ĐẶT HÀNG';
+    });
+  });
+
+  // Địa chỉ động: Tỉnh/Thành, Quận/Huyện, Phường/Xã
+  let provincesData: Province[] = [];
+
+  async function loadProvincesData(): Promise<void> {
+    // Đọc file JSON từ public (bạn nên copy file sang /public/privinces.json)
+    const res = await fetch('/privinces.json');
+    provincesData = await res.json();
+    renderProvinces();
+  }
+
+  function renderProvinces(): void {
+    const provinceSelect = document.getElementById('province') as HTMLSelectElement;
+    const districtSelect = document.getElementById('district') as HTMLSelectElement;
+    const wardSelect = document.getElementById('ward') as HTMLSelectElement;
+    
+    if (provinceSelect) {
+      provinceSelect.innerHTML = '<option value="">Vui lòng chọn Tỉnh thành</option>' +
+        provincesData.map((p: Province) => `<option value="${p.Code}">${p.Name}</option>`).join('');
+    }
+    
+    // Reset và disable district, ward
+    if (districtSelect) {
+      districtSelect.innerHTML = '<option value="">Vui lòng chọn Quận huyện</option>';
+      districtSelect.disabled = true;
+    }
+    if (wardSelect) {
+      wardSelect.innerHTML = '<option value="">Vui lòng chọn Phường xã</option>';
+      wardSelect.disabled = true;
+    }
+  }
+
+  const provinceSelect = document.getElementById('province') as HTMLSelectElement;
+  provinceSelect?.addEventListener('change', function() {
+    const province = provincesData.find((p: Province) => p.Code === this.value);
+    const districtSelect = document.getElementById('district') as HTMLSelectElement;
+    const wardSelect = document.getElementById('ward') as HTMLSelectElement;
+    
+    if (province && districtSelect) {
+      districtSelect.innerHTML = '<option value="">Vui lòng chọn Quận huyện</option>' +
+        province.District.map((d: District) => `<option value="${d.Code}">${d.Name}</option>`).join('');
+      districtSelect.disabled = false;
+    } else if (districtSelect) {
+      districtSelect.innerHTML = '<option value="">Vui lòng chọn Quận huyện</option>';
+      districtSelect.disabled = true;
+    }
+    
+    if (wardSelect) {
+      wardSelect.innerHTML = '<option value="">Vui lòng chọn Phường xã</option>';
+      wardSelect.disabled = true;
+    }
+  });
+
+  const districtSelect = document.getElementById('district') as HTMLSelectElement;
+  districtSelect?.addEventListener('change', function() {
+    const provinceSelect = document.getElementById('province') as HTMLSelectElement;
+    const province = provincesData.find((p: Province) => p.Code === provinceSelect?.value);
+    const district = province?.District.find((d: District) => d.Code === this.value);
+    const wardSelect = document.getElementById('ward') as HTMLSelectElement;
+    
+    if (district && wardSelect) {
+      wardSelect.innerHTML = '<option value="">Vui lòng chọn Phường xã</option>' +
+        district.Ward.map((w: Ward) => `<option value="${w.Code}">${w.Name}</option>`).join('');
+      wardSelect.disabled = false;
+    } else if (wardSelect) {
+      wardSelect.innerHTML = '<option value="">Vui lòng chọn Phường xã</option>';
+      wardSelect.disabled = true;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', loadProvincesData);
+</script>
+

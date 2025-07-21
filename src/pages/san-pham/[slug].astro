@@ -1,0 +1,122 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ProductGallery from '../../components/product/ProductGallery.astro';
+import ProductInfo from '../../components/product/ProductInfo.astro';
+import ReturnPolicy from '../../components/product/ReturnPolicy.astro';
+import RelatedProducts from '../../components/product/RelatedProducts.astro';
+import RecentlyViewed from '../../components/product/RecentlyViewed.astro';
+import ReviewsSection from '../../components/product/ReviewsSection.astro';
+import ProductService from '@/services/ProductService';
+
+export const prerender = false; // Not needed in 'server' mode
+console.log('Astro.params:', Astro.params);
+const { slug } = Astro.params
+
+const url = new URL(Astro.request.url);
+const host = url.hostname;
+const shopId = host ? host.split('.')[0] : '';
+if(shopId === ''){
+  Astro.redirect('/404');
+}
+
+// Get product by slug using ProductService
+const product = await ProductService.getProductBySlug(shopId, slug || '');
+
+// Check if product exists
+if (!product) {
+  Astro.redirect('/404');
+}
+
+//Fake data - only add if product exists
+if (product) {
+(product as any).specs = [
+      // { name: "Màn hình", value: "6.1 inch, Super Retina XDR, OLED, 2556 x 1179 pixel" },
+      // { name: "CPU", value: "Apple A16 Bionic" },
+      // { name: "RAM", value: "6 GB" },
+      // { name: "Bộ nhớ trong", value: "128 GB" },
+      // { name: "Camera sau", value: "48.0 MP + 12.0 MP + 12.0 MP" },
+      // { name: "Camera trước", value: "12.0 MP" },
+      // { name: "Pin", value: "3200 mAh" }
+    ];
+
+(product as any).rating = 4.8;
+}
+// product.variants = {
+//       colors: ["Đen", "Bạc", "Vàng", "Tím"],
+//       storage: ["128GB", "256GB", "512GB", "1TB"]
+//     };
+//End Fake data
+
+const images = [
+  ...(product?.mainImage ? [product.mainImage] : []),
+  ...(Array.isArray(product?.additionalMedia) ? product.additionalMedia : [])
+];
+// console.log('product:', product);
+---
+
+<Layout title={`${product?.title || 'Sản phẩm'} | BigS`} description={product?.description || ''}>
+  <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-6">
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm">
+          <li class="inline-flex items-center">
+            <a href="/" class="text-neutral hover:text-neutral">
+              Trang chủ
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <svg class="w-3 h-3 text-neutral mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+              </svg>
+              <a href="/san-pham" class="text-neutral hover:text-neutral ml-1 md:ml-2">Sản phẩm</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <svg class="w-3 h-3 text-neutral mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+              </svg>
+              <span class="text-neutral ml-1 md:ml-2 font-medium">{product?.title || 'Sản phẩm'}</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+      <ProductGallery images={images} />
+      <ProductInfo product={product} />
+    </div>
+
+    <ReturnPolicy />
+    <ReviewsSection product={product} />
+    <RelatedProducts currentProductId={product?.id?.toString() || ""} sections={product?.sections || []} />
+    <RecentlyViewed currentProductId={product?.id?.toString() || ""} />
+  </div>
+</Layout>
+
+<script>
+  // Store recently viewed products in localStorage
+  document.addEventListener('DOMContentLoaded', () => {
+    const path = window.location.pathname;
+    const slug = path.split('/').pop();
+    
+    // Get existing recently viewed products from localStorage
+    const recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    
+    // Add current product if not already in the list
+    if (slug && !recentlyViewed.includes(slug)) {
+      // Add to the beginning of the array
+      recentlyViewed.unshift(slug);
+      
+      // Keep only the last 5 products
+      if (recentlyViewed.length > 5) {
+        recentlyViewed.pop();
+      }
+      
+      // Save back to localStorage
+      localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
+    }
+  });
+</script>

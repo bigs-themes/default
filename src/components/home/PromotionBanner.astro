@@ -1,0 +1,36 @@
+---
+import { Button } from '@/components/ui';
+---
+
+<section class="py-12">
+  <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-gradient-to-r from-primary to-secondary rounded-xl overflow-hidden shadow-lg">
+      <div class="md:flex">
+        <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+          <div class="uppercase tracking-wide text-sm font-semibold text-white/80">Ưu đãi đặc biệt</div>
+          <h2 class="mt-2 text-3xl leading-tight font-bold text-white">Giảm giá đến 50% cho đơn hàng đầu tiên</h2>
+          <p class="mt-4 text-white/90">
+            Sử dụng mã <span class="font-bold bg-white/20 px-2 py-1 rounded">NEWBIGS50</span> khi thanh toán để nhận ưu đãi. Chỉ áp dụng cho khách hàng mới.
+          </p>
+          <div class="mt-6">
+            <Button
+              variant="outline"
+              size="lg"
+              class="bg-white hover:bg-neutral/10 text-primary border-white shadow-md hover:shadow-lg"
+              onclick="window.location.href='/san-pham'"
+            >
+              Mua sắm ngay
+            </Button>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 relative">
+          <img
+            src="https://images.pexels.com/photos/5632386/pexels-photo-5632386.jpeg"
+            alt="Promotion"
+            class="w-full h-full object-cover object-center"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

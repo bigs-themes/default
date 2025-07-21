@@ -1,0 +1,530 @@
+---
+// import { Variants } from '../../utils/variants';
+import { getDiscountedPrice, formatPrice } from '@/utils/price';
+import { Button } from '@/components/ui';
+
+
+export interface Props {
+  product: any;
+}
+
+const { product } = Astro.props;
+
+---
+
+{product ? (
+<div class="product-info">
+  <h1 class="text-2xl md:text-3xl font-bold text-neutral mb-2">
+    {product.name}
+  </h1>
+  
+  <div class="flex items-center mb-4">
+    <div class="flex text-yellow-400">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24" 
+          fill="currentColor" 
+          class={`w-5 h-5 ${i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+        >
+          <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
+        </svg>
+      ))}
+      <span class="ml-2 text-sm text-neutral">{product.rating}/5 ({product.reviewCount} đánh giá)</span>
+    </div>
+  </div>
+  
+  <div class="flex flex-wrap items-end mb-6">
+    <span class="text-3xl font-bold text-neutral" id="product-price">{formatPrice(product.price)}</span>
+    {product.calculatedDiscount && (
+      <span class="ml-3 text-lg text-neutral line-through">{formatPrice(getDiscountedPrice(product.price, product.calculatedDiscount))}</span>
+    )}
+    {product.calculatedDiscount && (
+      <span class="ml-3 bg-accent-500 text-white text-sm font-bold px-2 py-1 rounded">-{product.calculatedDiscount}%</span>
+    )}
+  </div>
+  
+  <div class="mb-6">
+    <p class="text-neutral leading-relaxed">{product.description}</p>
+  </div>
+  
+  <!-- {product.variants && (product.variants.sizes || product.variants.storage) && (
+    <div class="mb-6">
+      <h3 class="text-sm font-medium text-gray-900 mb-3">
+        {product.variants.sizes ? 'Kích thước' : 'Dung lượng'}
+      </h3>
+      <div class="flex flex-wrap gap-2">
+        {(product.variants.sizes || product.variants.storage).map((option, index) => (
+          <label class="size-option cursor-pointer">
+            <input 
+              type="radio" 
+              name="size" 
+              value={option} 
+              class="sr-only" 
+              checked={index === 0}
+            />
+            <div class={`px-3 py-2 rounded-md border ${index === 0 ? 'border-primary bg-primary' : 'border-neutral bg-white'} hover:border-primary transition-colors`}>
+              {option}
+            </div>
+          </label>
+        ))}
+      </div>
+    </div>
+  )} -->
+  {product.variantGroups && product.variantGroups.map((group: any) => (
+    <div class="mb-6">
+      <div class="text-sm font-medium text-neutral mb-3">{group.name}</div>
+      <div class="flex flex-wrap gap-2">
+        {group.options.map((option: any) => (
+          <label class="variant-option cursor-pointer">
+            <input 
+              type="radio" 
+              name={`variant-group-${group.id}`}
+              value={option.id} 
+              class="sr-only"
+            />
+            <div class="px-3 py-2 rounded-md border border-neutral bg-white hover:border-primary transition-colors">
+              {option.name}
+            </div>
+          </label>
+        ))}
+      </div>
+    </div>
+  ))}
+  <div class="mb-6">
+    <div class="flex items-center">
+      <span class="text-sm font-medium text-neutral mr-3">Số lượng</span>
+      <div class="custom-number-input h-10 w-32">
+        <div class="flex flex-row h-10 w-full rounded-lg relative bg-transparent">
+          <button 
+            data-action="decrement" 
+            class="bg-neutral text-white hover:text-white hover:bg-neutral h-full w-10 rounded-l cursor-pointer outline-none border border-neutral"
+          >
+            <span class="m-auto text-xl font-medium">−</span>
+          </button>
+          <input 
+            type="number" 
+            class="outline-none focus:outline-none text-center w-full bg-white font-medium text-neutral border-t border-b border-neutral" 
+            name="quantity" 
+            value="1" 
+            min="1"
+          />
+          <button 
+            data-action="increment" 
+            class="bg-neutral text-white hover:text-white hover:bg-neutral h-full w-10 rounded-r cursor-pointer border border-neutral"
+          >
+            <span class="m-auto text-xl font-medium">+</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="flex flex-col sm:flex-row gap-4 mb-8">
+    <Button 
+      variant="primary" 
+      size="lg" 
+      fullWidth={true}
+      id="add-to-cart"
+      data-product-id={product.id}
+      data-product-name={product.title}
+      data-product-price={product.price}
+      data-product-image={product.mainImage}
+      data-product-slug={product.url}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+      </svg>
+      Thêm vào giỏ
+    </Button>
+    <Button 
+      variant="secondary" 
+      size="lg" 
+      fullWidth={true}
+      id="buy-now"
+      data-product-id={product.id}
+      data-product-name={product.title}
+      data-product-price={product.price}
+      data-product-image={product.mainImage}
+      data-product-slug={product.url}
+    >
+      Mua ngay
+    </Button>
+  </div>
+  
+  <div class="flex flex-wrap gap-4 mt-4 text-sm text-neutral">
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1 text-primary">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+      </svg>
+      Miễn phí vận chuyển
+    </div>
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1 text-primary">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+      </svg>
+      Bảo hành chính hãng 12 tháng
+    </div>
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1 text-primary">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+      </svg>
+      Thanh toán khi nhận hàng
+    </div>
+  </div>
+  
+  <div class="border-t border-neutral mt-8 pt-8">
+    <div class="grid grid-cols-1 gap-y-2">
+        <div class="w-full text-neutral" set:html={product.descriptions}></div>
+    </div>
+  </div>
+  
+  <div class="flex items-center justify-between border-t border-neutral mt-8 pt-8">
+    <div class="flex items-center">
+      <button class="flex items-center text-neutral hover:text-accent-500">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+        </svg>
+        Yêu thích
+      </button>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button class="text-neutral hover:text-neutral flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+        </svg>
+        Chia sẻ
+      </button>
+    </div>
+  </div>
+</div>
+) : (
+  <div class="text-center py-8">
+    <p class="text-neutral">Không tìm thấy thông tin sản phẩm</p>
+  </div>
+)}
+
+<script define:vars={{ product }}>
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  // Add functions to save and load variant states
+  function saveSelectedVariants() {
+    const selectedVariants = Array.from(document.querySelectorAll('.variant-option input:checked')).map(input => ({
+      name: input.getAttribute('name'),
+      value: input.value
+    }));
+    localStorage.setItem(`product_${product.id}_variants`, JSON.stringify(selectedVariants));
+  }
+
+  function loadSelectedVariants() {
+    const savedVariants = localStorage.getItem(`product_${product.id}_variants`);
+    if (savedVariants) {
+      const variants = JSON.parse(savedVariants);
+      variants.forEach(({name, value}) => {
+        const input = document.querySelector(`input[name="${name}"][value="${value}"]`);
+        if (input) {
+          input.checked = true;
+          // Trigger change event to update UI
+          input.dispatchEvent(new Event('change'));
+        }
+      });
+    }
+  }
+
+  let quantityInput;
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // Handle quantity increment/decrement
+    quantityInput = document.querySelector('input[name="quantity"]');
+    const decrementButton = document.querySelector('[data-action="decrement"]');
+    const incrementButton = document.querySelector('[data-action="increment"]');
+
+    if (quantityInput && decrementButton && incrementButton) {
+      decrementButton.addEventListener('click', () => {
+        const currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) {
+          quantityInput.value = (currentValue - 1).toString();
+        }
+      });
+
+      incrementButton.addEventListener('click', () => {
+        const currentValue = parseInt(quantityInput.value);
+        quantityInput.value = (currentValue + 1).toString();
+      });
+
+      // Prevent manual input of invalid values
+      quantityInput.addEventListener('change', () => {
+        const value = parseInt(quantityInput.value);
+        if (isNaN(value) || value < 1) {
+          quantityInput.value = '1';
+        }
+      });
+    }
+
+    // Function to find selected variant
+    function findSelectedVariant() {
+      const variantInputs = document.querySelectorAll('input[name^="variant-group-"]:checked');
+      const selectedOptions = Array.from(variantInputs).map(input => input.value);
+      
+      // Convert variants object to array if it's not already
+      const variantsArray = Array.isArray(product.variants) 
+        ? product.variants 
+        : Object.values(product.variants || {});
+      
+      return variantsArray.find((variant) => {
+        return (!variant.option1Id || variant.option1Id === selectedOptions[0]) &&
+               (!variant.option2Id || variant.option2Id === selectedOptions[1]) &&
+               (!variant.option3Id || variant.option3Id === selectedOptions[2]);
+      });
+    }
+
+    // Handle variant selection
+    document.querySelectorAll('.variant-option input').forEach(input => {
+      input.addEventListener('change', function() {
+        // Remove active class from all options in the same group
+        const groupName = this.getAttribute('name');
+        document.querySelectorAll(`input[name="${groupName}"]`).forEach(radio => {
+          const label = radio.closest('.variant-option');
+          if (label) {
+            const div = label.querySelector('div');
+            if (div) {
+                        div.classList.remove('border-primary', 'bg-primary');
+          div.classList.add('border-neutral', 'bg-white');
+            }
+          }
+        });
+
+        // Add active class to selected option
+        if (this.checked) {
+          const label = this.closest('.variant-option');
+          if (label) {
+            const div = label.querySelector('div');
+            if (div) {
+                          div.classList.remove('border-neutral', 'bg-white');
+            div.classList.add('border-primary', 'bg-primary');
+            }
+          }
+        }
+
+        // Save selected variants
+        saveSelectedVariants();
+
+        const priceElement = document.getElementById('product-price');
+        // Update price based on selected variant
+        const selectedVariant = findSelectedVariant();
+        if (selectedVariant && typeof selectedVariant.listedPrice === 'number') {
+          priceElement.textContent = formatPrice(selectedVariant.listedPrice);
+        } else {
+          priceElement.textContent = formatPrice(product.price);
+        }
+      });
+    });
+
+    // Load saved variants when page loads
+    loadSelectedVariants();
+
+    // Cleanup when leaving the page
+    window.addEventListener('beforeunload', () => {
+      localStorage.removeItem(`product_${product.id}_variants`);
+    });
+
+    // Add function to reset variant selections
+    function resetVariantSelections() {
+      document.querySelectorAll('.variant-option input').forEach(input => {
+        input.checked = false;
+        const label = input.closest('.variant-option');
+        if (label) {
+          const div = label.querySelector('div');
+          if (div) {
+            div.classList.remove('border-primary', 'bg-primary');
+            div.classList.add('border-neutral', 'bg-white');
+          }
+        }
+      });
+      // Reset price to default
+      const priceElement = document.getElementById('product-price');
+      priceElement.textContent = formatPrice(product.price);
+    }
+
+    // Add to cart functionality
+    const addToCartButton = document.getElementById('add-to-cart');
+    
+    addToCartButton?.addEventListener('click', () => {
+      // Check if all variant groups have a selection
+      const variantInputs = document.querySelectorAll('input[name^="variant-group-"]');
+      const groupNames = Array.from(new Set(Array.from(variantInputs).map(input => input.name)));
+      const allVariantsSelected = groupNames.every(name => {
+        return !!document.querySelector(`input[name="${name}"]:checked`);
+      });
+      
+      if (!allVariantsSelected) {
+        if (window.showNotification) {
+          window.showNotification({
+            level: 'warning',
+            message: 'Vui lòng chọn đầy đủ thông số sản phẩm trước khi thêm vào giỏ hàng!',
+            title: 'Cảnh báo',
+            timer: 8000,
+            showCloseButton: true
+          });
+        } else if (window.app?.toggleNotification) {
+          window.app.toggleNotification({
+            state: true,
+            level: 'warning',
+            message: 'Vui lòng chọn đầy đủ thông số sản phẩm trước khi thêm vào giỏ hàng!',
+            title: '',
+            timer: 8000,
+            showCloseButton: true,
+          });
+        } else {
+          alert('Vui lòng chọn đầy đủ thông số sản phẩm trước khi thêm vào giỏ hàng!');
+        }
+        return;
+      }
+
+      // Get selected variant
+      const selectedVariant = findSelectedVariant();
+      if (!selectedVariant) {
+        window.app.toggleNotification({
+          state: true,
+          level: 'warning',
+          message: 'Không tìm thấy biến thể sản phẩm!',
+          title: '',
+          timer: 8000,
+          showCloseButton: true,
+        });
+        return;
+      }
+
+      // Get selected variants text
+      const selectedVariants = Array.from(document.querySelectorAll('.variant-option input:checked')).map(input => {
+        const groupLabel = input.closest('.mb-6')?.querySelector('.text-sm.font-medium')?.textContent?.trim() || '';
+        const optionName = input.closest('.variant-option')?.querySelector('div')?.textContent?.trim() || '';
+        return `${groupLabel}: ${optionName}`;
+      }).filter(Boolean).join(', ');
+
+      // Get quantity
+      const quantity = parseInt(quantityInput.value) || 1;
+
+      // Create product data
+      const productData = {
+        id: addToCartButton.dataset.productId,
+        name: addToCartButton.dataset.productName,
+        price: selectedVariant.listedPrice,
+        image: addToCartButton.dataset.productImage,
+        slug: addToCartButton.dataset.productSlug,
+        quantity: quantity,
+        variant: selectedVariants,
+        variantId: selectedVariant.id
+      };
+
+      // Add to cart
+      if (window.cart) {
+        window.cart.addItem(productData);
+        window.app.toggleNotification({
+          state: true,
+          html: `
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <svg class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="#fff"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                </svg>
+                <span class="text-sm md:text-base text-green-500 font-bold">Thêm vào giỏ hàng thành công</span>
+              </div>
+              <button id="swal-close-btn" class="text-gray-400 hover:text-gray-600 text-2xl font-bold focus:outline-none">&times;</button>
+            </div>
+            <div class="flex items-center gap-3 mb-4">
+              <img src="${addToCartButton.dataset.productImage}" alt="Ảnh sản phẩm" class="w-16 h-16 object-cover rounded-lg" />
+              <div>
+                <b>${addToCartButton.dataset.productName}</b>
+              </div>
+            </div>
+            <div class="flex gap-4 justify-center">
+              <button id="view-cart-btn" class="flex-1 bg-red-600 text-white py-3 rounded-lg text-sm md:text-base  hover:bg-red-700 transition">Xem giỏ hàng</button>
+              <button id="continue-btn" class="flex-1 bg-white text-green-700 border-2 border-green-700 py-3 rounded-lg text-sm md:text-base hover:bg-green-50 transition">Tiếp tục mua sắm</button>
+            </div>
+          `,
+          timer: 8000,
+        });
+        // Reset variant selections after successful add to cart
+        resetVariantSelections();
+      }
+    });
+
+    // Buy now functionality
+    const buyNowButton = document.getElementById('buy-now');
+    
+    buyNowButton?.addEventListener('click', () => {
+      // Check if all variant groups have a selection
+      const variantInputs = document.querySelectorAll('input[name^="variant-group-"]');
+      const groupNames = Array.from(new Set(Array.from(variantInputs).map(input => input.name)));
+      const allVariantsSelected = groupNames.every(name => {
+        return !!document.querySelector(`input[name="${name}"]:checked`);
+      });
+      
+      if (!allVariantsSelected) {
+        window.app.toggleNotification({
+          state: true,
+          level: 'warning',
+          message: 'Vui lòng chọn đầy đủ thông số sản phẩm trước khi mua hàng',
+          title: '',
+          timer: 8000,
+          showCloseButton: true,
+        });
+        return;
+      }
+
+      // Get selected variant
+      const selectedVariant = findSelectedVariant();
+      if (!selectedVariant) {
+        window.app.toggleNotification({
+          state: true,
+          level: 'warning',
+          message: 'Không tìm thấy biến thể sản phẩm!',
+          title: '',
+          timer: 8000,
+          showCloseButton: true,
+        });
+        return;
+      }
+
+      // Get selected variants text
+      const selectedVariants = Array.from(document.querySelectorAll('.variant-option input:checked')).map(input => {
+        const groupLabel = input.closest('.mb-6')?.querySelector('.text-sm.font-medium')?.textContent?.trim() || '';
+        const optionName = input.closest('.variant-option')?.querySelector('div')?.textContent?.trim() || '';
+        return `${groupLabel}: ${optionName}`;
+      }).filter(Boolean).join(', ');
+
+      // Get quantity
+      const quantity = parseInt(quantityInput.value) || 1;
+
+      // Create product data
+      const productData = {
+        id: buyNowButton.dataset.productId,
+        name: buyNowButton.dataset.productName,
+        price: selectedVariant.listedPrice,
+        image: buyNowButton.dataset.productImage,
+        slug: buyNowButton.dataset.productSlug,
+        quantity: quantity,
+        variant: selectedVariants,
+        variantId: selectedVariant.id
+      };
+
+      // Add to cart and redirect to checkout
+      if (window.cart) {
+        window.cart.addItem(productData);
+        // Reset variant selections before redirecting
+        resetVariantSelections();
+        // Redirect to checkout page
+        window.location.href = '/gio-hang';
+      }
+    });
+    
+  });
+</script>

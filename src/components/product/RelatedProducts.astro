@@ -1,0 +1,51 @@
+---
+import SwiperCategory from '@/components/subcomponents/SwiperCategory.astro';
+import ProductService from '@/services/ProductService';
+
+export interface Props {
+  currentProductId: string;
+  sections: string[];
+}
+
+const url = new URL(Astro.request.url);
+const host = url.hostname;
+const shopId = host ? host.split('.')[0] : '';
+if(shopId === ''){
+  Astro.redirect('/404');
+}
+
+const { currentProductId, sections } = Astro.props;
+
+// Extract section IDs from sections array
+const sectionIds = sections.map((section: any) => section.sectionId);
+
+// Get related products using ProductService
+let products: any[] = [];
+try {
+  products = await ProductService.getRelatedProducts(
+    shopId,
+    currentProductId,
+    10 // limit
+  );
+  console.log('Successfully loaded related products:', products.length);
+} catch (error) {
+  console.error('Error loading related products:', error);
+  products = [];
+}
+
+// Format price in Vietnamese currency
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    maximumFractionDigits: 0
+  }).format(price);
+};
+---
+
+{products.length > 0 && (
+<div class="mt-16">
+  <h2 class="text-2xl font-bold text-gray-900 mb-6">Sản phẩm liên quan</h2>
+  <SwiperCategory products={products} />
+</div>
+)}

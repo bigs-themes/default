@@ -1,0 +1,357 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Tra cứu đơn hàng - BigS">
+  <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="text-center mb-12">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Tra cứu đơn hàng</h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Kiểm tra thông tin và trạng thái đơn hàng của bạn tại BigS một cách nhanh chóng và dễ dàng.
+      </p>
+    </div>
+
+    <div class="max-w-2xl mx-auto">
+      <div class="bg-white rounded-lg shadow-sm p-6 md:p-8">
+        <form id="order-search-form" class="mb-8">
+          <div class="space-y-4">
+            <div>
+              <label for="search-type" class="block text-sm font-medium text-gray-700 mb-1">Tìm kiếm theo</label>
+              <select
+                id="search-type"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="order-id">Mã đơn hàng</option>
+                <!-- <option value="phone">Số điện thoại</option> -->
+              </select>
+            </div>
+            
+            <div id="order-id-input">
+              <label for="order-id" class="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
+              <input
+                type="text"
+                id="order-id"
+                name="orderCode"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="Nhập mã đơn hàng (ví dụ: BGS123456789)"
+                required
+              />
+            </div>
+            
+            <div id="phone-input" class="hidden">
+              <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+              <input
+                type="tel"
+                id="phone"
+                name="buyerPhone"
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="Nhập số điện thoại đặt hàng"
+              />
+            </div>
+            
+            <div class="pt-2">
+              <button
+                type="submit"
+                class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300"
+              >
+                Tra cứu
+              </button>
+            </div>
+            <div class="mb-4">
+              <button
+                type="button"
+                onclick="window.location.href = '/'"
+                class="flex items-center text-primary-700 hover:underline font-semibold text-base mx-auto"
+                style="gap: 0.25rem;"
+              >
+                <span class="text-xl">&lt;&lt;</span>
+                <span>QUAY LẠI</span>
+              </button>
+            </div>
+          </div>
+        </form>
+        
+        <div id="order-result" class="hidden">
+          <div class="border-b border-gray-200 pb-4 mb-6">
+            <h2 class="text-lg font-medium text-gray-900">Kết quả tìm kiếm</h2>
+            <p class="text-sm text-gray-600 mt-1 search-message"></p>
+          </div>
+          
+          
+          <div id="orders-list" class="space-y-8">
+            <!-- Orders will be rendered here -->
+          </div>
+        </div>
+        
+        <div id="no-result" class="hidden text-center py-8">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-gray-400 mx-auto mb-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Không tìm thấy đơn hàng</h3>
+          <p class="text-gray-600 max-w-md mx-auto">
+            Chúng tôi không thể tìm thấy đơn hàng với thông tin bạn cung cấp. Vui lòng kiểm tra lại hoặc liên hệ với chúng tôi để được hỗ trợ.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchTypeSelect = document.getElementById('search-type');
+    const orderIdInput = document.getElementById('order-id-input');
+    const phoneInput = document.getElementById('phone-input');
+    const searchForm = document.getElementById('order-search-form');
+    const orderResult = document.getElementById('order-result');
+    const noResult = document.getElementById('no-result');
+    
+    // Toggle search type
+    searchTypeSelect?.addEventListener('change', function() {
+      const orderIdInputField = document.getElementById('order-id') as HTMLInputElement;
+      const phoneInputField = document.getElementById('phone') as HTMLInputElement;
+      console.log((searchTypeSelect as HTMLSelectElement).value);
+      if ((searchTypeSelect as HTMLSelectElement).value === 'order-id') {
+        orderIdInput?.classList.remove('hidden');
+        phoneInput?.classList.add('hidden');
+        // Đảm bảo input mã đơn hàng có name, input phone không có name
+        orderIdInputField?.setAttribute('name', 'orderCode');
+        orderIdInputField?.setAttribute('required', 'required');
+        phoneInputField?.removeAttribute('name');
+        phoneInputField?.removeAttribute('required');
+      } else {
+        orderIdInput?.classList.add('hidden');
+        phoneInput?.classList.remove('hidden');
+        // Đảm bảo input phone có name, input mã đơn hàng không có name
+        phoneInputField?.setAttribute('name', 'buyerPhone');
+        phoneInputField?.setAttribute('required', 'required');
+        orderIdInputField?.removeAttribute('name');
+        orderIdInputField?.removeAttribute('required');
+      }
+    });
+    
+    // Handle search form submit
+    searchForm?.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const searchType = (searchTypeSelect as HTMLSelectElement)?.value;
+      let searchValue = '';
+      if (searchType === 'order-id') {
+        const orderIdInput = document.getElementById('order-id') as HTMLInputElement;
+        searchValue = orderIdInput?.value || '';
+      } else {
+        const phoneInput = document.getElementById('phone') as HTMLInputElement;
+        searchValue = phoneInput?.value || '';
+      }
+      let apiUrl = `/api/order/order-id?`;
+      if (searchType === 'order-id') {
+        apiUrl += `orderCode=${encodeURIComponent(searchValue)}`;
+      } else {
+        apiUrl += `buyerPhone=${encodeURIComponent(searchValue)}`;
+      }
+      try {
+        const res = await fetch(apiUrl);
+        const response = await res.json();
+        
+        if (response.success) {
+          if (response.data && response.data.length > 0) {
+            renderOrdersList(response.data, response.message);
+            if (orderResult) orderResult.classList.remove('hidden');
+            if (noResult) noResult.classList.add('hidden');
+          } else {
+            if (orderResult) orderResult.classList.add('hidden');
+            if (noResult) noResult.classList.remove('hidden');
+          }
+        } else {
+          console.error('API Error:', response.error);
+          if (orderResult) orderResult.classList.add('hidden');
+          if (noResult) noResult.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        if (orderResult) orderResult.classList.add('hidden');
+        if (noResult) noResult.classList.remove('hidden');
+      }
+    });
+
+    /**
+     * Render danh sách đơn hàng
+     * @param {Array<any>} orders - Danh sách đơn hàng
+     * @param {string} message - Thông báo kết quả tìm kiếm
+     */
+    function renderOrdersList(orders: Array<any>, message: string) {
+      const ordersListEl = document.getElementById('orders-list');
+      const messageEl = document.querySelector('.search-message');
+      
+      if (messageEl) messageEl.textContent = message;
+      
+      if (ordersListEl) {
+        ordersListEl.innerHTML = orders.map((order: any) => {
+          // Định nghĩa các bước trạng thái cơ bản
+          let statusSteps = [
+            { key: 'pending', label: 'Chờ xác nhận' },
+            { key: 'processing', label: 'Đang xử lý' },
+            { key: 'shipping', label: 'Đang vận chuyển' },
+            { key: 'in_transit', label: 'Đang trên đường giao' },
+            { key: 'delivered', label: 'Giao hàng thành công' },
+            { key: 'failed', label: 'Giao hàng thất bại' }
+          ];
+
+          // Chỉ thêm trạng thái "Đã trả hàng" và "Đã huỷ" nếu đơn hàng có status tương ứng
+          if (order.status === 'returned') {
+            statusSteps = [...statusSteps, { key: 'returned', label: 'Đã trả hàng' }];
+          } else if (order.status === 'cancelled') {
+            statusSteps = [...statusSteps, { key: 'cancelled', label: 'Đã huỷ' }];
+          }
+
+          const currentStepIndex = statusSteps.findIndex(s => s.key === order.status);
+
+          return `
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 class="text-lg font-medium text-gray-900">Đơn hàng #${order.orderCode}</h3>
+                    <p class="text-sm text-gray-500 mt-1">Ngày đặt: ${new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
+                     <p class="text-sm text-gray-500 mt-1">Phương thức vận chuyển: ${order.shippingDetails || 'Chưa cập nhật'}</p>
+                  </div>
+                  <span class="px-3 py-1 text-sm font-medium rounded-full ${
+                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                    order.status === 'processing' ? 'bg-blue-100 text-blue-800' :
+                    order.status === 'shipping' ? 'bg-purple-100 text-purple-800' :
+                    order.status === 'in_transit' ? 'bg-indigo-100 text-indigo-800' :
+                    order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                    order.status === 'failed' ? 'bg-red-100 text-red-800' :
+                    order.status === 'returned' ? 'bg-gray-100 text-gray-800' :
+                    order.status === 'cancelled' ? 'bg-gray-200 text-gray-500 line-through' :
+                    'bg-green-100 text-green-800'
+                  }">
+                    ${order.status === 'pending' ? 'Chờ xác nhận' :
+                      order.status === 'processing' ? 'Đang xử lý' :
+                      order.status === 'shipping' ? 'Đang giao hàng' :
+                      order.status === 'in_transit' ? 'Đang trên đường giao' :
+                      order.status === 'delivered' ? 'Giao hàng thành công' :
+                      order.status === 'failed' ? 'Giao hàng thất bại' :
+                      order.status === 'returned' ? 'Đã trả hàng' :
+                      order.status === 'cancelled' ? 'Đã huỷ' :
+                      'Không xác định'}
+                  </span>
+                </div>
+
+                <!-- Order Status Progress -->
+                <div class="flex justify-between my-6 gap-y-2 gap-x-1 overflow-x-auto scrollbar-thin scrollbar scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+                  ${statusSteps.map((step, idx) => {
+                    // Tìm index của trạng thái hiện tại
+                    const currentIdx = currentStepIndex;
+                    // Nếu là bước trước trạng thái hiện tại
+                    const isCompleted = idx < currentIdx;
+                    // Nếu là bước hiện tại
+                    const isCurrent = idx === currentIdx;
+                    // Nếu là trạng thái kết thúc đặc biệt
+                    const isFailed = ['failed', 'returned', 'cancelled'].includes(step.key) && isCurrent;
+                    
+                    return `
+                      <div class="flex-1 min-w-[50px] flex flex-col items-center relative">
+                        <div class="w-4 h-4 md:w-6 md:h-6 rounded-full flex items-center justify-center mb-1 z-10 text-xs
+                          ${isCompleted ? 'bg-green-500 text-white' : isFailed ? 'bg-red-500 text-white' : isCurrent ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500'}">
+                          ${isCompleted 
+                            ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 md:w-4 md:h-4 text-white"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`
+                            : isCurrent
+                              ? (isFailed 
+                                  ? `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 md:w-4 md:h-4 text-white"><circle cx="12" cy="12" r="5" fill="currentColor" /></svg>`
+                                  : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3 h-3 md:w-4 md:h-4 text-white"><circle cx="12" cy="12" r="5" fill="currentColor" /></svg>`)
+                              : `<span class="w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full block"></span>`
+                          }
+                        </div>
+                        <span class="text-[10px] md:text-xs text-gray-600 block text-center w-full">${step.label}</span>
+                        ${idx < statusSteps.length - 1
+                          ? `<div class="h-0.5 w-full bg-gray-300 absolute left-1/2 top-2 md:top-3 z-0" style="width: 100%; height: 2px; margin-left: 8px;"></div>`
+                          : ''
+                        }
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+
+                <!-- Order Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h4 class="text-md font-medium text-gray-700 mb-2">Thông tin đơn hàng</h4>
+                    <div class="text-sm text-gray-600 space-y-1">
+                      <p><span class="text-gray-500">Mã đơn hàng:</span> ${order.orderCode}</p>
+                      <p><span class="text-gray-500">Ngày đặt:</span> ${new Date(order.createdAt).toLocaleDateString('vi-VN')}</p>
+                      <p><span class="text-gray-500">Phương thức vận chuyển:</span> ${order.shippingDetails || 'Chưa cập nhật'}</p>
+                      <p><span class="text-gray-500">Phương thức thanh toán:</span> ${order.paymentMethod || 'Chưa cập nhật'}</p>
+                      <p><span class="text-gray-500">Trạng thái thanh toán:</span> ${order.paymentStatus || 'Chưa cập nhật'}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 class="text-md font-medium text-gray-700 mb-2">Thông tin giao hàng</h4>
+                    <div class="text-sm text-gray-600 space-y-1">
+                      <p><span class="text-gray-500">Người nhận:</span> ${order.buyerName}</p>
+                      <p><span class="text-gray-500">Số điện thoại:</span> ${order.buyerPhone}</p>
+                      <p><span class="text-gray-500">Địa chỉ:</span> ${order.buyerAddress}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="border rounded-md overflow-hidden">
+                  <div class="divide-y divide-gray-200">
+                    ${order.orderProducts.map((item: any) => {
+                      return `
+                      <div class="p-4 flex items-center">
+                        <div class="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                          <img src="${item.itemMedia || '/placeholder.png'}" alt="${item.itemName}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="ml-4 flex-1">
+                          <h4 class="text-sm font-medium text-gray-900">${item.itemName}</h4>
+                          <p class="text-sm text-gray-500 mt-1">${item.itemVariant || ''}</p>
+                        </div>
+                        <div class="text-sm text-gray-900 font-medium ml-4">
+                          ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.listedPrice)} x ${item.quantity}
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                  </div>
+                  
+                  <div class="bg-gray-50 p-4">
+                    <div class="flex justify-between text-sm">
+                      <span class="text-gray-600">Tạm tính:</span>
+                      <span class="font-medium text-gray-900">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.price)}</span>
+                    </div>
+                    <div class="flex justify-between text-sm mt-1">
+                      <span class="text-gray-600">Phí vận chuyển:</span>
+                      <span class="font-medium text-gray-900">${order.shippingFee === 0 ? 'Miễn phí' : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.shippingFee)}</span>
+                    </div>
+                    <div class="flex justify-between mt-3 pt-3 border-t border-gray-200">
+                      <span class="text-base font-medium text-gray-900">Tổng cộng:</span>
+                      <span class="text-base font-bold text-gray-900">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.finalPrice)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                  <a 
+                    href="#" 
+                    class="bg-primary-600 hover:bg-primary-700 text-white text-center font-medium py-2 px-4 rounded-md transition-colors duration-300 flex-1"
+                  >
+                    Liên hệ hỗ trợ
+                  </a>
+                  <a 
+                    href="#" 
+                    class="bg-white hover:bg-gray-50 text-gray-700 text-center font-medium py-2 px-4 rounded-md border border-gray-300 transition-colors duration-300 flex-1"
+                  >
+                    In đơn hàng
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  });
+</script>

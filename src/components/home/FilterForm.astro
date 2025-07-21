@@ -1,0 +1,143 @@
+---
+import { Input, Card } from '@/components/ui';
+import icons from '../../assets/icons.json';
+
+export interface Props {
+  categories: Array<{ key: string; name: string; url: string; productCount: number }>;
+  totalProducts: number;
+  selectedSection: string;
+  searchTerm: string;
+  sortBy: string;
+  minPrice: number;
+  maxPrice: number;
+  sortOptions: Array<{ value: string; label: string }>;
+  priceRanges: Array<{ label: string; min: number; max: number }>;
+}
+
+const {
+  categories,
+  totalProducts,
+  selectedSection,
+  searchTerm,
+  sortBy,
+  minPrice,
+  maxPrice,
+  sortOptions,
+  priceRanges
+} = Astro.props;
+
+function getIconSvgBySlug(slug: string) {
+  const icon = icons.find(i => i.slug === slug);
+  return icon ? icon.svg : '';
+}
+---
+
+<Card variant="default" padding="md">
+  <form id="filter-form" class="space-y-4">
+    <!-- Danh mục -->
+    <div>
+      <label class="block text-sm font-medium mb-2">Danh mục</label>
+      <!-- Mobile: Select -->
+      <select id="section-select-mobile" name="section" class="block w-full px-3 py-2 border border-neutral rounded-md focus:outline-none focus:ring-2 focus:ring-primary sm:hidden mb-2">
+        <option value="all" selected={selectedSection === 'all'}>Tất cả ({totalProducts})</option>
+        {categories.map((cat: { key: string, name: string, productCount: number }) => (
+          <option value={cat.key} selected={selectedSection === cat.key}>{cat.name} ({cat.productCount})</option>
+        ))}
+      </select>
+      <!-- Desktop: Label group -->
+      <div class="bg-white relative z-10">
+        <div class="max-w-screen-xl mx-auto">
+          <div id="section-scroll" class="hidden relative md:flex overflow-x-auto space-x-8 pb-2 scrollbar-hide">
+            <label data-section-label
+            class={`cursor-pointer text-center max-w-[100px] w-full flex flex-col items-center min-w-[100px] group px-2 py-2 rounded-lg border transition-all duration-200
+              ${selectedSection === 'all'
+                ? 'bg-primary border-primary text-white font-semibold shadow'
+                : 'bg-white border-neutral hover:bg-primary hover:border-primary'}
+            `}
+          >
+            <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors" >
+              <span class="w-6 h-6 text-white" set:html={getIconSvgBySlug("all")}></span>
+            </div>
+            <input
+              type="radio"
+              name="section"
+              value="all"
+              checked={selectedSection === 'all'}
+              class="sr-only"
+            />
+            <span class="text-xs group-hover:text-primary">Tất cả ({totalProducts})</span>
+          </label>
+          {categories.map((cat: { key: string, name: string, url: string, productCount: number }) => (
+            <label data-section-label
+              class={`cursor-pointer text-center max-w-[100px] w-full flex flex-col items-center min-w-[100px] group px-2 py-2 rounded-lg border transition-all duration-200
+                ${selectedSection === cat.key
+                  ? 'bg-primary border-primary text-white font-semibold shadow'
+                  : 'bg-white border-neutral hover:bg-primary hover:border-primary'}
+              `}
+            >
+              <div class="bg-neutral p-2 rounded-full mb-2 group-hover:bg-primary transition-colors">
+                <span class="w-6 h-6 text-white" set:html={getIconSvgBySlug(cat.url)}></span>
+              </div>
+              <input
+                type="radio"
+                name="section"
+                value={cat.key}
+                checked={selectedSection === cat.key}
+                class="sr-only"
+              />
+              <span class="text-xs group-hover:text-primary">{cat.name} ({cat.productCount})</span>
+            </label>
+          ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tìm kiếm và Sắp xếp -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="search" class="block text-sm font-medium mb-1">Tìm kiếm</label>
+        <Input
+          type="search"
+          id="search"
+          name="search"
+          value={searchTerm}
+          placeholder="Nhập tên sản phẩm..."
+        />
+      </div>
+      <div>
+        <label for="sort" class="block text-sm font-medium mb-1">Sắp xếp theo</label>
+        <select
+          id="sort"
+          name="sort"
+          class="w-full px-3 py-2 border border-neutral rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+        >
+          {sortOptions.map((option) => (
+            <option value={option.value} selected={sortBy === option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    <!-- Khoảng giá -->
+    <div>
+      <label for="priceRange" class="block text-sm font-medium mb-1">Khoảng giá</label>
+      <select
+        id="priceRange"
+        name="priceRange"
+        class="w-full px-3 py-2 border border-neutral rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+      >
+        {priceRanges.map((range) => (
+          <option
+            value={`${range.min}-${range.max}`}
+            selected={minPrice === range.min && maxPrice === range.max}
+          >
+            {range.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  </form>
+</Card> 

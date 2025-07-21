@@ -1,0 +1,63 @@
+---
+export interface Props {
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search';
+  placeholder?: string;
+  value?: string;
+  disabled?: boolean;
+  required?: boolean;
+  fullWidth?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'default' | 'error' | 'success';
+  class?: string;
+  name?: string;
+  id?: string;
+}
+
+const {
+  type = 'text',
+  placeholder = '',
+  value = '',
+  disabled = false,
+  required = false,
+  fullWidth = true,
+  size = 'md',
+  variant = 'default',
+  class: className = '',
+  name = '',
+  id = '',
+} = Astro.props;
+
+// Base classes
+const baseClasses = 'w-full border rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50 disabled:cursor-not-allowed';
+
+// Size classes
+const sizeClasses = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-4 py-3 text-base'
+};
+
+// Variant classes
+const variantClasses = {
+  default: 'border-neutral/20 text-neutral bg-white focus:border-primary focus:ring-primary/20',
+  error: 'border-semantic text-neutral bg-white focus:border-semantic focus:ring-semantic/20',
+  success: 'border-green-500 text-neutral bg-white focus:border-green-500 focus:ring-green-500/20'
+};
+
+// Width classes
+const widthClasses = fullWidth ? 'w-full' : '';
+
+// Combine all classes
+const inputClasses = `${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${widthClasses} ${className}`;
+---
+
+<input 
+  type={type}
+  placeholder={placeholder}
+  value={value}
+  disabled={disabled}
+  required={required}
+  class={inputClasses}
+  name={name}
+  id={id}
+/> 

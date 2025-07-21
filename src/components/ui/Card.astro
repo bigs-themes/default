@@ -1,0 +1,38 @@
+---
+export interface Props {
+  variant?: 'default' | 'elevated' | 'outlined';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const {
+  variant = 'default',
+  padding = 'md',
+  class: className = '',
+} = Astro.props;
+
+// Base classes
+const baseClasses = 'bg-white rounded-lg transition-all duration-200';
+
+// Variant classes
+const variantClasses = {
+  default: 'border border-neutral/20',
+  elevated: 'shadow-md hover:shadow-lg',
+  outlined: 'border-2 border-neutral/20'
+};
+
+// Padding classes
+const paddingClasses = {
+  none: '',
+  sm: 'p-3',
+  md: 'p-4',
+  lg: 'p-6'
+};
+
+// Combine all classes
+const cardClasses = `${baseClasses} ${variantClasses[variant]} ${paddingClasses[padding]} ${className}`;
+---
+
+<div class={cardClasses}>
+  <slot />
+</div> 

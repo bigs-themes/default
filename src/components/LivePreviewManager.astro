@@ -1,0 +1,511 @@
+---
+import { shopStyleService } from "../services/ShopStyleService";
+
+// Load initial config
+let initialConfig = null;
+try {
+  const host = Astro.request.headers.get("host") || "";
+  const shopId = host.split(".")[0];
+
+  if (shopId && shopId !== "localhost" && shopId !== "127") {
+    initialConfig = await shopStyleService.getShopStyleConfig(shopId);
+  }
+} catch (error) {
+  // Failed to load initial config
+}
+---
+
+<script define:vars={{ initialConfig }}>
+  // Debug variables
+  let messageCount = 0;
+  let isEditMode = false;
+
+  // Live Preview Manager for real-time style updates
+  function deepMergeConfig(oldConfig, newConfig) {
+    if (!oldConfig) return newConfig;
+    if (!newConfig) return oldConfig;
+
+    // Ưu tiên dữ liệu từ live preview (newConfig) trước dữ liệu từ API (oldConfig)
+    const merged = { ...oldConfig };
+    for (const key in newConfig) {
+      if (
+        typeof newConfig[key] === "object" &&
+        newConfig[key] !== null &&
+        !Array.isArray(newConfig[key])
+      ) {
+        merged[key] = deepMergeConfig(oldConfig[key], newConfig[key]);
+      } else if (newConfig[key] !== undefined && newConfig[key] !== null) {
+        // Ưu tiên newConfig (live preview) trước oldConfig (API)
+        merged[key] = newConfig[key];
+      }
+      // Nếu newConfig[key] là undefined/null, giữ nguyên oldConfig[key]
+    }
+    return merged;
+  }
+
+  class LivePreviewManager {
+    constructor() {
+      this.config = initialConfig || {};
+      this.hasLivePreviewData = false; // Track if we have live preview data
+
+      this.init();
+    }
+
+    init() {
+      // Listen for messages from parent window (BigS-ShopManager)
+      window.addEventListener("message", this.handleMessage.bind(this));
+
+      // Send ready signal to parent
+      this.sendReadySignal();
+
+      // Apply initial config if available
+      if (this.config) {
+        this.applyConfig(this.config);
+      }
+    }
+
+    handleMessage(event) {
+      messageCount++;
+
+      // Only accept messages from trusted origin
+      if (
+        event.origin !== window.location.origin &&
+        !event.origin.includes("localhost") &&
+        !event.origin.includes("127.0.0.1")
+      ) {
+        return;
+      }
+
+      const { type, data } = event.data;
+
+      switch (type) {
+        case "EDIT_MODE":
+          isEditMode = data.isEditMode;
+          break;
+
+        case "UPDATE_STYLES":
+          if (isEditMode) {
+            this.applyConfig(data);
+          }
+          break;
+
+        case "PING":
+          this.sendPong();
+          break;
+
+        case "TEST_RESPONSE":
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    sendReadySignal() {
+      // Send ready signal to parent window
+      if (window.parent !== window) {
+        const message = {
+          type: "IFRAME_READY",
+          data: {
+            url: window.location.href,
+            timestamp: Date.now(),
+          },
+        };
+        window.parent.postMessage(message, "*");
+      }
+    }
+
+    sendPong() {
+      if (window.parent !== window) {
+        const message = {
+          type: "PONG",
+          data: { timestamp: Date.now() },
+        };
+        window.parent.postMessage(message, "*");
+      }
+    }
+
+    applyConfig(config) {
+      // Đánh dấu có dữ liệu từ live preview
+      this.hasLivePreviewData = true;
+
+      // Ưu tiên dữ liệu từ live preview trước dữ liệu từ API
+      this.config = deepMergeConfig(this.config, config);
+
+      if (this.config.settings) {
+        this.updateColors(this.config.settings.colors);
+        this.updateFonts(this.config.settings.fonts);
+        this.updateButtonStyle(this.config.settings.buttonStyle);
+        this.updateCardStyle(this.config.settings.cardStyle);
+        this.updateLogos(this.config.settings.logos);
+      }
+
+      if (this.config.pageInterface) {
+        this.updateMenuSettings(this.config.pageInterface.menuSettings);
+        this.updatePageLayoutSettings(
+          this.config.pageInterface.pageLayoutSettings,
+        );
+        this.updateFooterSettings(this.config.pageInterface.footerSettings);
+        this.updateAnnouncementBar(
+          this.config.pageInterface.announcementBarSettings,
+        );
+      }
+    }
+
+    updateColors(colors) {
+      if (!colors) return;
+
+      const root = document.documentElement;
+
+      if (colors.primary)
+        root.style.setProperty("--color-primary", colors.primary);
+      if (colors.secondary)
+        root.style.setProperty("--color-secondary", colors.secondary);
+      if (colors.neutral)
+        root.style.setProperty("--color-neutral", colors.neutral);
+      if (colors.semantic)
+        root.style.setProperty("--color-semantic", colors.semantic);
+      if (colors.background)
+        root.style.setProperty("--color-background", colors.background);
+      if (colors.surface)
+        root.style.setProperty("--color-surface", colors.surface);
+      if (colors.text) root.style.setProperty("--color-text", colors.text);
+      if (colors.textSecondary)
+        root.style.setProperty("--color-text-secondary", colors.textSecondary);
+    }
+
+    updateFonts(fonts) {
+      if (!fonts) return;
+
+      const root = document.documentElement;
+
+      if (fonts.heading) {
+        root.style.setProperty("--font-heading", fonts.heading);
+        this.loadGoogleFont(fonts.heading);
+      }
+      if (fonts.body) {
+        root.style.setProperty("--font-body", fonts.body);
+        this.loadGoogleFont(fonts.body);
+      }
+    }
+
+    loadGoogleFont(fontName) {
+      // Check if font is already loaded
+      if (document.querySelector(`link[href*="${fontName}"]`)) {
+        return;
+      }
+
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@400;500;600;700&display=swap`;
+      document.head.appendChild(link);
+    }
+
+    updateButtonStyle(buttonStyle) {
+      if (!buttonStyle) return;
+
+      const root = document.documentElement;
+      const primary = buttonStyle.config?.primary;
+      const secondary = buttonStyle.config?.secondary;
+
+      if (primary) {
+        // Primary button styles - using new flat format
+        root.style.setProperty('--button-primary-background', primary.bg || '#1e90ff');
+        root.style.setProperty('--button-primary-text', primary.text || '#ffffff');
+        root.style.setProperty('--button-primary-border', `1px solid ${primary.border || '#1e90ff'}`);
+        root.style.setProperty('--button-primary-border-radius', primary.radius || '8px');
+        root.style.setProperty('--button-primary-shadow', primary.shadow || '0 2px 4px rgba(0,0,0,0.1)');
+        root.style.setProperty('--button-primary-padding', primary.padding || '12px 24px');
+        root.style.setProperty('--button-primary-font-size', primary.fontSize || '16px');
+        root.style.setProperty('--button-primary-hover-background', primary.hoverBg || '#1c86ee');
+        root.style.setProperty('--button-primary-hover-text', primary.hoverText || '#ffffff');
+        root.style.setProperty('--button-primary-hover-effect', primary.hoverEffect || 'scale');
+      }
+
+      if (secondary) {
+        // Secondary button styles - using new flat format
+        root.style.setProperty('--button-secondary-background', secondary.bg || '#f0f0f0');
+        root.style.setProperty('--button-secondary-text', secondary.text || '#333333');
+        root.style.setProperty('--button-secondary-border', `1px solid ${secondary.border || '#cccccc'}`);
+        root.style.setProperty('--button-secondary-border-radius', secondary.radius || '6px');
+        root.style.setProperty('--button-secondary-shadow', secondary.shadow || 'none');
+        root.style.setProperty('--button-secondary-padding', secondary.padding || '10px 20px');
+        root.style.setProperty('--button-secondary-font-size', secondary.fontSize || '14px');
+        root.style.setProperty('--button-secondary-hover-background', secondary.hoverBg || '#e0e0e0');
+        root.style.setProperty('--button-secondary-hover-text', secondary.hoverText || '#000000');
+        root.style.setProperty('--button-secondary-hover-effect', secondary.hoverEffect || 'darken');
+      }
+    }
+
+    updateCardStyle(cardStyle) {
+      if (!cardStyle) return;
+
+      const root = document.documentElement;
+      if (cardStyle.config) {
+        root.style.setProperty('--card-background', cardStyle.config.bg || '#ffffff');
+        root.style.setProperty('--card-border', cardStyle.config.border || '1px solid #eeeeee');
+        root.style.setProperty('--card-border-radius', cardStyle.config.radius || '12px');
+        root.style.setProperty('--card-shadow', cardStyle.config.shadow || '0 2px 8px rgba(0,0,0,0.05)');
+        root.style.setProperty('--card-hover-effect', cardStyle.config.hoverEffect || 'lift');
+      }
+    }
+
+    updateMenuSettings(menuSettings) {
+      if (!menuSettings) return;
+
+      const header = document.querySelector("header");
+      const searchBar = document.querySelector(".search-bar");
+
+      if (header) {
+        // Update menu type
+        if (menuSettings.menuType) {
+          header.className = header.className.replace(
+            /menu-type-\w+/g,
+            `menu-type-${menuSettings.menuType}`,
+          );
+        }
+
+        // Update transparent background
+        if (menuSettings.transparentBackground) {
+          header.classList.add("transparent-bg");
+        } else {
+          header.classList.remove("transparent-bg");
+        }
+      }
+
+      // Update search bar visibility
+      if (searchBar) {
+        if (menuSettings.showSearch) {
+          searchBar.style.display = "block";
+        } else {
+          searchBar.style.display = "none";
+        }
+      }
+    }
+
+    updatePageLayoutSettings(pageLayoutSettings) {
+      if (!pageLayoutSettings) return;
+
+      // Send message to ProductGrid component if it exists
+      if (window.updatePageLayoutSettings) {
+        window.updatePageLayoutSettings(pageLayoutSettings);
+        return;
+      }
+
+      // Fallback: update directly if ProductGrid is on the page
+      const productGrid = document.getElementById("product-grid");
+      const container = document.querySelector("#product-grid-container")
+        ?.parentElement?.parentElement;
+
+      if (productGrid) {
+        // Update grid CSS variables
+        const productsPerRow = pageLayoutSettings.productsPerRow || 4;
+        const productsPerRowMobile =
+          pageLayoutSettings.productsPerRowMobile || 2;
+
+        productGrid.style.setProperty(
+          "--products-per-row",
+          productsPerRow.toString(),
+        );
+        productGrid.style.setProperty(
+          "--products-per-row-mobile",
+          productsPerRowMobile.toString(),
+        );
+      }
+
+      if (container) {
+        // Update container classes for full width
+        if (pageLayoutSettings.fullWidthGrid) {
+          container.classList.add("full-width-grid");
+          container.classList.remove("max-w-screen-xl");
+        } else {
+          container.classList.remove("full-width-grid");
+          container.classList.add("max-w-screen-xl");
+        }
+      }
+    }
+
+    updateFooterSettings(footerSettings) {
+      if (!footerSettings) return;
+
+      // Use MenuFooter component function if available
+      if (window.updateFooterSettingsFromPreview) {
+        window.updateFooterSettingsFromPreview(footerSettings);
+        return;
+      }
+
+      // Fallback: tự tìm element (cách cũ)
+      const footer = document.querySelector("footer");
+
+      if (footer) {
+        // Update footer text
+        const footerText = footer.querySelector(".border-t p");
+        if (footerText && footerSettings.footerText) {
+          footerText.textContent = footerSettings.footerText;
+        }
+
+        // Update product categories visibility
+        const categoriesSection = footer.querySelector(
+          'div:has(h3:contains("Danh mục sản phẩm"))',
+        );
+        if (categoriesSection) {
+          categoriesSection.style.display = footerSettings.showProductCategories
+            ? "block"
+            : "none";
+        }
+
+        // Update custom pages visibility
+        const customPagesSection = footer.querySelector(
+          'div:has(h3:contains("Thông tin"))',
+        );
+        if (customPagesSection) {
+          customPagesSection.style.display = footerSettings.showCustomPages
+            ? "block"
+            : "none";
+        }
+      }
+    }
+
+    updateAnnouncementBar(announcementBarSettings) {
+      if (!announcementBarSettings) {
+        return;
+      }
+      // Sử dụng function từ AnnouncementBar component nếu có
+      if (window.updateAnnouncementBarFromPreview) {
+        window.updateAnnouncementBarFromPreview(announcementBarSettings);
+        return;
+      }
+
+      // Fallback: tự tìm element (cách cũ)
+      const announcementBar = document.querySelector(".announcement-bar");
+
+      if (announcementBar) {
+        // Update visibility
+        if (!announcementBarSettings.visible) {
+          announcementBar.style.display = "none";
+          return;
+        }
+
+        // Check if should show on current page
+        const currentPage = window.location.pathname === "/" ? "home" : "other";
+        if (
+          announcementBarSettings.showOnHomepageOnly &&
+          currentPage !== "home"
+        ) {
+          announcementBar.style.display = "none";
+          return;
+        }
+
+        // Show the bar
+        announcementBar.style.display = "block";
+
+        // Update content
+        const marquee = announcementBar.querySelector("marquee");
+        if (marquee && announcementBarSettings.content) {
+          marquee.textContent = announcementBarSettings.content;
+        }
+
+        // Update colors
+        if (announcementBarSettings.backgroundColor) {
+          announcementBar.style.backgroundColor =
+            announcementBarSettings.backgroundColor;
+        }
+        if (announcementBarSettings.textColor) {
+          announcementBar.style.color = announcementBarSettings.textColor;
+        }
+
+        // Update button colors
+        const button = announcementBar.querySelector("button");
+        if (button && announcementBarSettings.textColor) {
+          button.style.color = announcementBarSettings.textColor;
+          button.style.borderColor = announcementBarSettings.textColor;
+        }
+      }
+    }
+
+    updateLogos(logos) {
+      if (!logos) {
+        return;
+      }
+      // Update header logo
+      const headerLogo = document.querySelector(".header-logo");
+      const headerText = document.querySelector("#logo-header span");
+
+      if (headerLogo) {
+        if (logos.primaryLogo && logos.primaryLogo.preview) {
+          headerLogo.src = logos.primaryLogo.preview;
+          headerLogo.style.display = "block";
+
+          // Ẩn text logo
+          if (headerText) {
+            headerText.style.display = "none";
+          }
+        } else {
+          headerLogo.style.display = "none";
+
+          // Hiện text logo
+          if (headerText) {
+            headerText.style.display = "block";
+          }
+        }
+      }
+
+      // Update footer logo
+      const footerLogo = document.querySelector(".footer-logo");
+      const logoText = document.querySelector("#logo-footer .logo-text");
+      // footerLogo.src = logos.primaryLogo.preview;
+      // footerLogo.style.display = "block";
+      // if (logoText) {
+      //   logoText.style.display = "none";
+      // }
+      if (footerLogo) {
+        if (logos.secondaryLogo && logos.secondaryLogo.preview) {
+          footerLogo.src = logos.secondaryLogo.preview;
+          footerLogo.style.display = "block";
+          if (logoText) {
+            logoText.style.display = "none";
+          }
+        } else {
+          if (logos.primaryLogo && logos.primaryLogo.preview) {
+            footerLogo.src = logos.primaryLogo.preview;
+            footerLogo.style.display = "block";
+            if (logoText) {
+              logoText.style.display = "none";
+            }
+          }
+        }
+      }
+
+      // Update logo text fallback
+      const logoTexts = document.querySelectorAll(".logo-text");
+      logoTexts.forEach((logoText) => {
+        if (logos.primaryLogo?.preview || logos.secondaryLogo?.preview) {
+          logoText.style.display = "none";
+        } else {
+          logoText.style.display = "block";
+        }
+      });
+    }
+  }
+
+  // Expose edit mode status for debug
+  window.getEditModeStatus = () => {
+    return {
+      isEditMode: isEditMode,
+      messageCount: messageCount,
+      hasPreview: isEditMode, // Chỉ có preview khi isEditMode = true
+      isInIframe: window.parent !== window,
+      isLivePreviewManagerActive: isEditMode, // Chỉ active khi isEditMode = true
+    };
+  };
+
+  // Initialize LivePreviewManager when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      new LivePreviewManager();
+    });
+  } else {
+    new LivePreviewManager();
+  }
+</script>
+

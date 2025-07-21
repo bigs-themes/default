@@ -1,0 +1,40 @@
+---
+export interface Props {
+  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const {
+  variant = 'secondary',
+  size = 'md',
+  class: className = '',
+} = Astro.props;
+
+// Base classes
+const baseClasses = 'inline-flex items-center font-medium rounded-full';
+
+// Variant classes
+const variantClasses = {
+  primary: 'bg-primary text-white',
+  secondary: 'bg-secondary text-white',
+  success: 'bg-green-500 text-white',
+  warning: 'bg-yellow-500 text-white',
+  error: 'bg-semantic text-white',
+  info: 'bg-blue-500 text-white'
+};
+
+// Size classes
+const sizeClasses = {
+  sm: 'px-2 py-0.5 text-xs',
+  md: 'px-2.5 py-1 text-xs',
+  lg: 'px-3 py-1.5 text-sm'
+};
+
+// Combine all classes
+const badgeClasses = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+---
+
+<span class={badgeClasses}>
+  <slot />
+</span> 

@@ -1,0 +1,136 @@
+---
+import ProductGallery from '../product/ProductGallery.astro';
+import ProductInfo from '../product/ProductInfo.astro';
+// import { Variants } from '@/utils/variants';
+---
+
+<div id="variants-popup" class="hidden fixed inset-0 z-50">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+  
+  <!-- Variants Panel -->
+  <div class="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-xl">
+    <div class="flex flex-col h-full">
+      <!-- Header -->
+      <div class="flex items-center justify-between p-4 border-b">
+        <h2 class="text-lg font-medium text-gray-900">Chọn loại bạn muốn thêm</h2>
+        <button id="close-variants" class="text-gray-400 hover:text-gray-500">
+          <span class="sr-only">Đóng</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Variants Items -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <div id="variants-items">
+          <!-- Nội dung sẽ được render bằng JS khi mở popup -->
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+<script >
+  import { Variants } from '@/utils/variants';
+</script>
+<script>
+
+  // Khai báo biến global cho window
+  declare global {
+    interface Window { selectedProductId: string; variants: Variants; }
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
+  // Hàm load thông tin sản phẩm vào popup
+  async function loadProductInfo() {
+    const productId = window.selectedProductId;
+    if (!productId) return;
+
+    const variants = window.variants;
+    if (!variants) return;
+
+    const product = variants.currentProduct;
+    const variantsItems = document.getElementById('variants-items');
+    if (product && variantsItems) {
+      variantsItems.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <img src="${product.images[0]}" alt="${product.name}" class="w-full rounded-lg mb-4" />
+          <div>
+            <h3 class="text-lg font-bold mb-2">${product.name}</h3>
+            <div class="text-primary-600 font-semibold mb-2">${formatPrice(product.price)}</div>
+            <div class="text-gray-500 mb-2">${product.description}</div>
+            <!-- Render thêm các option, specs nếu muốn -->
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // Function to handle popup visibility
+  function handlePopupVisibility() {
+    const popup = document.getElementById('variants-popup');
+    if (!popup) return;
+
+    // Check if popup is visible
+    const isVisible = !popup.classList.contains('hidden');
+    if (isVisible) {
+      loadProductInfo();
+    }
+  }
+
+  // Watch for popup visibility changes
+  const popup = document.getElementById('variants-popup');
+  if (popup) {
+    // Check initial state
+    handlePopupVisibility();
+
+    // Add click event listener to close button
+    document.getElementById('close-variants')?.addEventListener('click', () => {
+      popup.classList.add('hidden');
+    });
+
+    // Add click event listener to backdrop
+    popup.addEventListener('click', (e) => {
+      if (e.target === popup) {
+        popup.classList.add('hidden');
+      }
+    });
+    const addToCartButton = document.getElementById('add-to-cart');
+    
+    addToCartButton?.addEventListener('click', () => {
+      const selectedColor = document.querySelector('.color-option input:checked');
+      const selectedSize = document.querySelector('.size-option input:checked') as HTMLInputElement;
+      const quantityInput = document.querySelector('input[name="quantity"]');
+      const quantity = parseInt(quantityInput ? (quantityInput as HTMLInputElement).value : '1');
+      
+      const productData = {
+        id: addToCartButton.dataset.productId,
+        name: addToCartButton.dataset.productName,
+        price: parseInt(addToCartButton.dataset.productPrice),
+        image: addToCartButton.dataset.productImage,
+        slug: addToCartButton.dataset.productSlug,
+        quantity: quantity,
+        variant: [
+          selectedColor?.value,
+          selectedSize?.value
+        ].filter(Boolean).join(', ')
+      };
+    });
+  }
+  
+</script>
+
+<style>
+  .quantity-btn {
+    @apply w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100;
+  }
+</style>

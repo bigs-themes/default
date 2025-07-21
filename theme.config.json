@@ -1,0 +1,36 @@
+{
+  "name": "Modern Theme",
+  "version": "1.0.0",
+  "description": "Modern e-commerce theme with horizontal navigation",
+  "author": "BigS Team",
+  "repository": "https://github.com/bigs-themes/modern.git",
+  "license": "MIT",
+  "features": [
+    "horizontal-navigation",
+    "responsive-design",
+    "dark-mode-support",
+    "customizable-colors",
+    "seo-optimized"
+  ],
+  "layouts": {
+    "main": "src/layouts/MainLayout.astro",
+    "product": "src/layouts/ProductLayout.astro",
+    "category": "src/layouts/CategoryLayout.astro"
+  },
+  "components": {
+    "header": "src/components/Header.astro",
+    "footer": "src/components/Footer.astro",
+    "announcementBar": "src/components/AnnouncementBar.astro",
+    "productCard": "src/components/ProductCard.astro",
+    "cartPopup": "src/components/CartPopup.astro"
+  },
+  "assets": {
+    "css": "src/assets/css/",
+    "js": "src/assets/js/",
+    "images": "src/assets/images/"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.0.0",
+    "@astrojs/tailwind": "^5.0.0"
+  }
+} 

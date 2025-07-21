@@ -1,0 +1,279 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    maximumFractionDigits: 0
+  }).format(price);
+};
+---
+
+<Layout title="Giỏ hàng - BigS">
+  <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Giỏ hàng của bạn</h1>
+    <div id="cart-summary">
+      <div class="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start">
+        <!-- Cart Items -->
+        <div class="lg:col-span-7">
+          <div id="cart-items" class="bg-white rounded-lg shadow-sm divide-y divide-gray-200">
+            <!-- Cart items will be dynamically inserted here -->
+          </div>
+        </div>
+  
+        <!-- Order Summary -->
+        <div class="mt-8 lg:mt-0 lg:col-span-5">
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <!-- <h2 class="text-lg font-medium text-gray-900 mb-4">Tóm tắt đơn hàng</h2> -->
+            
+  
+            <!-- Summary -->
+            <div class="flow-root">
+              <dl class="text-sm">
+                <!-- <div class="flex justify-between py-2">
+                  <dt class="text-gray-600">Tạm tính</dt>
+                  <dd class="font-medium text-gray-900" id="subtotal">0₫</dd>
+                </div>
+                <div class="flex justify-between py-2 border-t border-gray-200">
+                  <dt class="text-gray-600">Phí vận chuyển</dt>
+                  <dd class="font-medium text-gray-900" id="shipping">30.000₫</dd>
+                </div>
+                <div class="flex justify-between py-2 border-t border-gray-200">
+                  <dt class="text-gray-600">Giảm giá</dt>
+                  <dd class="font-medium text-gray-900" id="discount">0₫</dd>
+                </div> -->
+                <div class="flex justify-between py-2  text-base">
+                  <dt class="font-medium text-gray-900">Tổng cộng</dt>
+                  <dd class="font-bold text-gray-900" id="total">0₫</dd>
+                </div>
+              </dl>
+            </div>
+  
+            <div class="mt-6 h-full w-full flex items-end">
+              <a
+                href="/check-out"
+                class="w-full bg-primary-600 text-white py-3 px-4 rounded-md text-center text-base font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                Tiến hành thanh toán
+              </a>
+            </div>
+          </div>
+  
+          <!-- Shipping Info -->
+          <!-- <div class="mt-4 bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-900 mb-2">Thông tin vận chuyển</h3>
+            <p class="text-sm text-gray-600">
+              Thời gian giao hàng dự kiến: 2-4 ngày làm việc
+            </p>
+            <div class="mt-4 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-primary-600 mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+              </svg>
+              <span class="text-sm text-gray-600">Miễn phí vận chuyển cho đơn hàng từ 500.000₫</span>
+            </div>
+          </div> -->
+        </div>
+      </div>
+    </div>
+    
+
+    <!-- Empty Cart State -->
+    <div id="empty-cart" class="hidden text-center py-12">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-gray-400 mx-auto mb-4">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+      </svg>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Giỏ hàng trống</h2>
+      <p class="text-gray-600 mb-8">Bạn chưa có sản phẩm nào trong giỏ hàng</p>
+      <a
+        href="/san-pham"
+        class="inline-block bg-primary-600 text-white px-6 py-3 rounded-md text-base font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+      >
+        Tiếp tục mua sắm
+      </a>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Function to format price in Vietnamese currency
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
+  // Function to update cart page UI
+  const updateCartPage = () => {
+    const cart = window.cart;
+    const items = cart.items;
+    const cartItemsContainer = document.getElementById('cart-items');
+    const emptyCart = document.getElementById('empty-cart');
+    const cartSummary = document.getElementById('cart-summary');
+    const subtotalElement = document.getElementById('subtotal');
+    const totalElement = document.getElementById('total');
+    const shippingElement = document.getElementById('shipping');
+    
+    if (items.length === 0) {
+      cartItemsContainer?.classList.add('hidden');
+      emptyCart?.classList.remove('hidden');
+      cartSummary?.classList.add('hidden');
+      return;
+    }
+
+    cartItemsContainer?.classList.remove('hidden');
+    emptyCart?.classList.add('hidden');
+    cartSummary?.classList.remove('hidden');
+
+    if (cartItemsContainer) {
+      cartItemsContainer.innerHTML = items.map(item => `
+        <div class="p-4 sm:p-6 flex items-start" data-product-id="${item.id}" data-variant="${item.variant}">
+          <div class="flex-shrink-0">
+            <img
+              src="${item.image}"
+              alt="${item.name}"
+              class="w-24 h-24 rounded-md object-center object-cover sm:w-32 sm:h-32"
+            />
+          </div>
+          
+          <div class="ml-4 flex-1 flex flex-col justify-between sm:ml-6">
+            <div class="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+              <div>
+                <div class="flex justify-between">
+                  <h3 class="text-sm">
+                    <a href="/san-pham/${item.slug}" class="font-medium text-gray-700 hover:text-gray-800">
+                      ${item.name}
+                    </a>
+                  </h3>
+                </div>
+                <div class="mt-1 flex text-sm">
+                  <p class="text-gray-500">${item.variant || ''}</p>
+                </div>
+                <p class="mt-1 text-sm font-medium text-gray-900">${formatPrice(item.price)}</p>
+              </div>
+
+              <div class="mt-4 sm:mt-0 sm:pr-9">
+                <div class="flex items-center">
+                  <button 
+                    class="quantity-btn" 
+                    data-action="decrease"
+                    data-product-id="${item.id}"
+                    data-variant="${item.variant}"
+                  >-</button>
+                  <input
+                    type="number"
+                    value="${item.quantity}"
+                    min="1"
+                    class="mx-2 w-12 text-center border-gray-300 rounded-md"
+                    data-product-id="${item.id}"
+                    data-variant="${item.variant}"
+                  />
+                  <button 
+                    class="quantity-btn" 
+                    data-action="increase"
+                    data-product-id="${item.id}"
+                    data-variant="${item.variant}"
+                  >+</button>
+                </div>
+
+                <div class="absolute top-0 right-0">
+                  <button 
+                    type="button"
+                    class="text-gray-400 hover:text-gray-500 remove-item"
+                    data-product-id="${item.id}"
+                    data-variant="${item.variant}"
+                  >
+                    <span class="sr-only">Xóa</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <p class="mt-4 flex text-sm text-gray-700 space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-green-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+              </svg>
+              <span>Giao hàng miễn phí</span>
+            </p>
+          </div>
+        </div>
+      `).join('');
+
+      // Add event listeners
+      cartItemsContainer.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const productId = btn.dataset.productId;
+          const variant = btn.dataset.variant;
+          const action = btn.dataset.action;
+          const item = cart.items.find(i => i.id === productId && i.variant === variant);
+          
+          if (item) {
+            if (action === 'increase') {
+              cart.updateQuantity(productId, variant, item.quantity + 1);
+            } else {
+              cart.updateQuantity(productId, variant, item.quantity - 1);
+            }
+            updateCartPage();
+          }
+        });
+      });
+
+      cartItemsContainer.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+          const productId = input.dataset.productId;
+          const variant = input.dataset.variant;
+          const quantity = parseInt(input.value);
+          
+          if (quantity > 0) {
+            cart.updateQuantity(productId, variant, quantity);
+            updateCartPage();
+          }
+        });
+      });
+
+      cartItemsContainer.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const productId = btn.dataset.productId;
+          const variant = btn.dataset.variant;
+          cart.removeItem(productId, variant);
+          updateCartPage();
+        });
+      });
+    }
+
+    // Update summary
+    const subtotal = cart.getTotal();
+    const shipping = subtotal >= 500000 ? 0 : 0;
+    const total = subtotal + shipping;
+
+    if (subtotalElement) subtotalElement.textContent = formatPrice(subtotal);
+    if (shippingElement) shippingElement.textContent = formatPrice(shipping);
+    if (totalElement) totalElement.textContent = formatPrice(total);
+  };
+
+  // Initialize cart page
+  document.addEventListener('DOMContentLoaded', () => {
+    updateCartPage();
+  });
+</script>
+
+<style>
+  .quantity-btn {
+    @apply w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+</style>

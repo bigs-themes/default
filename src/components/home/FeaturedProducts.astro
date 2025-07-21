@@ -1,0 +1,173 @@
+---
+import { getDiscountedPrice, formatPrice } from "@/utils/price";
+import ProductService from "@/services/ProductService";
+import { Button } from '@/components/ui';
+
+// Tạo URL cho API
+const url = new URL(Astro.request.url);
+const host = url.hostname;
+const shopId = host ? host.split(".")[0] : "";
+if (shopId === "") {
+  Astro.redirect("/404");
+}
+
+// Get featured products using ProductService
+let products: any[] = [];
+try {
+  products = await ProductService.getFeaturedProducts(shopId, 8);
+    // console.log('Successfully loaded featured products:', products.length);
+    // console.log('Featured products data:', products);
+    
+} catch (error) {
+  console.error('Error loading featured products:', error);
+  products = [];
+}
+---
+
+<section class="py-16">
+  <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-2xl md:text-3xl font-bold text-neutral">
+        Sản phẩm nổi bật
+      </h2>
+      <a
+        href="/san-pham"
+        class="text-primary hover:text-primary/80 font-medium flex items-center"
+      >
+        Xem tất cả
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-5 h-5 ml-1"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5"></path>
+        </svg>
+      </a>
+    </div>
+
+    <div
+      id="featured-products-grid"
+      class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+    >
+      <!-- Fallback: Render products server-side if JavaScript fails -->
+      {products.length > 0 ? products.map((product) => (
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group">
+            <a href={`/san-pham/${product.url}`} class="block relative">
+              <div class="relative h-48 sm:h-56 overflow-hidden">
+                <img
+                  src={product.mainImage}
+                  alt={product.title}
+                  class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                />
+                {product.calculatedDiscount && (
+                <div class="absolute top-2 left-2 bg-secondary text-white text-xs font-bold px-2 py-1 rounded">
+                    -{product.calculatedDiscount}%
+                </div>
+                )}
+              </div>
+            </a>
+            <div class="p-4">
+              <a href={`/san-pham/${product.url}`} class="block">
+                <h3 class="text-neutral font-medium text-sm sm:text-base line-clamp-2 mb-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
+                  {product.title}
+                </h3>
+                <div class="flex flex-wrap items-center mb-1 md:space-x-2">
+                  <span class="text-neutral font-semibold">
+                    {formatPrice(product.price)}
+                  </span>
+                  {product.calculatedDiscount && (
+                    <span class="text-neutral/60 text-sm line-through">
+                    {formatPrice(getDiscountedPrice(product.price, product.calculatedDiscount))}
+                    </span>
+                  )}
+                </div>
+              </a>
+              <div class="mt-4">
+              <Button
+                variant="primary"
+                fullWidth={true}
+                class="add-to-variant"
+                data-product-id={product.id}
+                data-product-name={product.title}
+                data-product-image={product.mainImage}
+                data-product-slug={product.url}
+                data-product-price={product.price}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="w-5 h-5 mr-1"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                  />
+                </svg>
+                Thêm vào giỏ
+              </Button>
+            </div>
+          </div>
+        </div>
+      )) : (
+        <div class="col-span-full py-8 text-center text-gray-500">
+          Không có sản phẩm nổi bật
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<script>
+  // Simple event delegation for add to cart buttons (works with server-side rendered content)
+  document.addEventListener("DOMContentLoaded", () => {
+    // Initialize variants if not exists
+    if (!window.variants) {
+      // Try to import Variants class
+      try {
+        import('../../utils/variants').then(module => {
+          window.variants = new module.Variants();
+        }).catch(error => {
+          console.error('Failed to load Variants:', error);
+        });
+      } catch (error) {
+        console.error('Variants not available:', error);
+      }
+    }
+
+    // Use event delegation for add to cart buttons
+    document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+      if (!target) return;
+      
+      const button = target.closest('.add-to-variant');
+      
+      if (button) {
+        const productId = button.getAttribute('data-product-id');
+        const productName = button.getAttribute('data-product-name');
+        const productImage = button.getAttribute('data-product-image');
+        const productSlug = button.getAttribute('data-product-slug');
+        const productPrice = button.getAttribute('data-product-price');
+
+        if (productId && window.variants) {
+          window.selectedProductId = productId;
+          window.variants.loadProduct(productId).then(() => {
+            const popup = document.getElementById('variants-popup');
+            popup?.classList.remove('hidden');
+          }).catch((error: any) => {
+            console.error('Error loading product:', error);
+          });
+        }
+      }
+    });
+  });
+</script>

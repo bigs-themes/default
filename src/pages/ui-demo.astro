@@ -1,0 +1,315 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
+---
+
+<Layout title="UI Components Demo - Bigs StoreFront">
+  <div class="min-h-screen bg-neutral/5 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-primary mb-4">UI Components Library</h1>
+        <p class="text-xl text-neutral">Thư viện components có thể tái sử dụng cho Bigs-StoreFront</p>
+      </div>
+
+      <!-- Color System -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">🎨 Hệ thống màu sắc</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-primary rounded-lg mx-auto mb-2"></div>
+            <p class="font-medium text-neutral">Primary</p>
+            <p class="text-sm text-neutral/60">Button chính, CTA</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 bg-secondary rounded-lg mx-auto mb-2"></div>
+            <p class="font-medium text-neutral">Secondary</p>
+            <p class="text-sm text-neutral/60">Button phụ, Badge</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 bg-neutral rounded-lg mx-auto mb-2"></div>
+            <p class="font-medium text-neutral">Neutral</p>
+            <p class="text-sm text-neutral/60">Text, Border</p>
+          </div>
+          <div class="text-center">
+            <div class="w-16 h-16 bg-semantic rounded-lg mx-auto mb-2"></div>
+            <p class="font-medium text-neutral">Semantic</p>
+            <p class="text-sm text-neutral/60">Error, Warning</p>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Buttons -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">🔘 Buttons</h2>
+        
+        <div class="space-y-6">
+          <!-- Variants -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Variants</h3>
+            <div class="flex flex-wrap gap-3">
+              <Button variant="primary">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="ghost">Ghost</Button>
+            </div>
+          </div>
+
+          <!-- Sizes -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Sizes</h3>
+            <div class="flex flex-wrap items-center gap-3">
+              <Button variant="primary" size="sm">Small</Button>
+              <Button variant="primary" size="md">Medium</Button>
+              <Button variant="primary" size="lg">Large</Button>
+            </div>
+          </div>
+
+          <!-- States -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">States</h3>
+            <div class="flex flex-wrap gap-3">
+              <Button variant="primary" loading={true}>Loading</Button>
+              <Button variant="primary" disabled={true}>Disabled</Button>
+              <Button variant="primary" fullWidth={true}>Full Width</Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Inputs -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">📝 Inputs</h2>
+        
+        <div class="space-y-6">
+          <!-- Types -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Types</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input type="text" placeholder="Text input" />
+              <Input type="email" placeholder="Email input" />
+              <Input type="password" placeholder="Password input" />
+              <Input type="search" placeholder="Search input" />
+            </div>
+          </div>
+
+          <!-- Variants -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Validation States</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input variant="default" placeholder="Default state" />
+              <Input variant="error" placeholder="Error state" />
+              <Input variant="success" placeholder="Success state" />
+            </div>
+          </div>
+
+          <!-- Sizes -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Sizes</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input size="sm" placeholder="Small input" />
+              <Input size="md" placeholder="Medium input" />
+              <Input size="lg" placeholder="Large input" />
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Badges -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">🏷️ Badges</h2>
+        
+        <div class="space-y-6">
+          <!-- Variants -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Variants</h3>
+            <div class="flex flex-wrap gap-3">
+              <Badge variant="primary">Primary</Badge>
+              <Badge variant="secondary">Secondary</Badge>
+              <Badge variant="success">Success</Badge>
+              <Badge variant="warning">Warning</Badge>
+              <Badge variant="error">Error</Badge>
+              <Badge variant="info">Info</Badge>
+            </div>
+          </div>
+
+          <!-- Sizes -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Sizes</h3>
+            <div class="flex flex-wrap items-center gap-3">
+              <Badge variant="secondary" size="sm">Small</Badge>
+              <Badge variant="secondary" size="md">Medium</Badge>
+              <Badge variant="secondary" size="lg">Large</Badge>
+            </div>
+          </div>
+
+          <!-- Examples -->
+          <div>
+            <h3 class="text-lg font-semibold text-neutral mb-3">Examples</h3>
+            <div class="flex flex-wrap gap-3">
+              <Badge variant="secondary">-20%</Badge>
+              <Badge variant="success">Mới</Badge>
+              <Badge variant="warning">Hot</Badge>
+              <Badge variant="error">Hết hàng</Badge>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Cards -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">🃏 Cards</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card variant="default" padding="md">
+            <h3 class="font-semibold text-neutral mb-2">Default Card</h3>
+            <p class="text-neutral/70 text-sm">Card với border mặc định</p>
+          </Card>
+          
+          <Card variant="elevated" padding="md">
+            <h3 class="font-semibold text-neutral mb-2">Elevated Card</h3>
+            <p class="text-neutral/70 text-sm">Card với shadow và hover effect</p>
+          </Card>
+          
+          <Card variant="outlined" padding="md">
+            <h3 class="font-semibold text-neutral mb-2">Outlined Card</h3>
+            <p class="text-neutral/70 text-sm">Card với viền đậm</p>
+          </Card>
+        </div>
+      </Card>
+
+      <!-- Alerts -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">⚠️ Alerts</h2>
+        
+        <div class="space-y-4">
+          <Alert variant="success" title="Thành công">
+            Đơn hàng đã được đặt thành công! Bạn sẽ nhận được email xác nhận trong vài phút.
+          </Alert>
+          
+          <Alert variant="warning" title="Cảnh báo" dismissible={true}>
+            Sản phẩm này sắp hết hàng, hãy đặt hàng sớm để đảm bảo có sẵn.
+          </Alert>
+          
+          <Alert variant="error" title="Lỗi">
+            Không thể kết nối đến máy chủ. Vui lòng thử lại sau.
+          </Alert>
+          
+          <Alert variant="info" title="Thông tin">
+            Khuyến mãi mùa hè đã bắt đầu! Giảm giá lên đến 50% cho tất cả sản phẩm.
+          </Alert>
+        </div>
+      </Card>
+
+      <!-- Modal Demo -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">🪟 Modal</h2>
+        
+        <div class="space-y-4">
+          <p class="text-neutral/70">Click vào button bên dưới để mở modal demo:</p>
+          <Button variant="primary" onclick="openModal('demo-modal')">
+            Mở Modal Demo
+          </Button>
+        </div>
+      </Card>
+
+      <!-- Product Card Example -->
+      <Card variant="elevated" padding="lg" class="mb-8">
+        <h2 class="text-2xl font-bold text-neutral mb-6">📦 Product Card Example</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Product Card 1 -->
+          <Card variant="default" padding="none" class="overflow-hidden">
+            <div class="relative">
+              <div class="w-full h-48 bg-neutral/10"></div>
+              <Badge variant="secondary" class="absolute top-2 left-2">-15%</Badge>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-neutral mb-2">Sản phẩm mẫu 1</h3>
+              <p class="text-neutral/70 text-sm mb-3">Mô tả sản phẩm ngắn gọn</p>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-bold text-neutral">500.000₫</span>
+                <span class="text-neutral/60 text-sm line-through">588.000₫</span>
+              </div>
+              <Button variant="primary" fullWidth={true}>
+                Thêm vào giỏ
+              </Button>
+            </div>
+          </Card>
+
+          <!-- Product Card 2 -->
+          <Card variant="default" padding="none" class="overflow-hidden">
+            <div class="relative">
+              <div class="w-full h-48 bg-neutral/10"></div>
+              <Badge variant="success" class="absolute top-2 left-2">Mới</Badge>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-neutral mb-2">Sản phẩm mẫu 2</h3>
+              <p class="text-neutral/70 text-sm mb-3">Mô tả sản phẩm ngắn gọn</p>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-bold text-neutral">750.000₫</span>
+              </div>
+              <Button variant="primary" fullWidth={true}>
+                Thêm vào giỏ
+              </Button>
+            </div>
+          </Card>
+
+          <!-- Product Card 3 -->
+          <Card variant="default" padding="none" class="overflow-hidden">
+            <div class="relative">
+              <div class="w-full h-48 bg-neutral/10"></div>
+              <Badge variant="warning" class="absolute top-2 left-2">Hot</Badge>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-neutral mb-2">Sản phẩm mẫu 3</h3>
+              <p class="text-neutral/70 text-sm mb-3">Mô tả sản phẩm ngắn gọn</p>
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-bold text-neutral">1.200.000₫</span>
+                <span class="text-neutral/60 text-sm line-through">1.500.000₫</span>
+              </div>
+              <Button variant="primary" fullWidth={true}>
+                Thêm vào giỏ
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </Card>
+    </div>
+  </div>
+
+  <!-- Modal Demo -->
+  <Modal id="demo-modal" title="Modal Demo" size="lg">
+    <div class="space-y-4">
+      <p class="text-neutral/70">
+        Đây là một modal demo để test component Modal. Modal này có thể được đóng bằng cách:
+      </p>
+      <ul class="list-disc list-inside text-neutral/70 space-y-1">
+        <li>Click vào nút "Đóng"</li>
+        <li>Click vào backdrop (vùng tối bên ngoài)</li>
+        <li>Nhấn phím ESC (nếu được implement)</li>
+      </ul>
+      
+      <div class="mt-6">
+        <h4 class="font-semibold text-neutral mb-2">Test các components khác trong modal:</h4>
+        <div class="space-y-3">
+          <Input placeholder="Input trong modal" />
+          <div class="flex gap-2">
+            <Badge variant="primary">Primary</Badge>
+            <Badge variant="secondary">Secondary</Badge>
+            <Badge variant="success">Success</Badge>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <Fragment slot="footer">
+      <Button variant="secondary" onclick="closeModal('demo-modal')">
+        Hủy
+      </Button>
+      <Button variant="primary">
+        Xác nhận
+      </Button>
+    </Fragment>
+  </Modal>
+</Layout> 

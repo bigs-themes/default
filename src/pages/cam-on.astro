@@ -1,0 +1,213 @@
+---
+export const prerender = false;
+import Layout from '../layouts/Layout.astro';
+import { DatabaseService } from '@/lib/database';
+
+interface OrderData {
+  id: string;
+  orderCode: string;
+  buyerName: string;
+  buyerAddress: string;
+  buyerPhone: string;
+  buyerNotes?: string;
+  paymentMethod: string;
+  shippingDetails?: string;
+  price: number;
+  shippingFee: number;
+  finalPrice: number;
+  orderProducts?: any[];
+}
+
+let orderData: OrderData | null = null;
+let notFound = false;
+
+const orderId = Astro.url.searchParams.get('orderId');
+
+if (!orderId) {
+  notFound = true;
+} else {
+  try {
+    const host = Astro.request.headers.get('host');
+    const shopId = host ? host.split('.')[0] : '';
+    
+    // Get order data using new DatabaseService
+    const orderQuery = await DatabaseService.executeQuery(
+      shopId,
+      `SELECT * FROM "Order" WHERE id = ?`,
+      [orderId],
+      { cache: true, ttl: 5 * 60 * 1000 } // 5 minutes cache
+    );
+    
+    if (orderQuery.length > 0) {
+      const rawOrderData = orderQuery[0];
+      orderData = {
+        id: rawOrderData.id,
+        orderCode: rawOrderData.orderCode || '',
+        buyerName: rawOrderData.buyerName || '',
+        buyerAddress: rawOrderData.buyerAddress || '',
+        buyerPhone: rawOrderData.buyerPhone || '',
+        buyerNotes: rawOrderData.buyerNotes,
+        paymentMethod: rawOrderData.paymentMethod || '',
+        shippingDetails: rawOrderData.shippingDetails,
+        price: Number(rawOrderData.price) || 0,
+        shippingFee: Number(rawOrderData.shippingFee) || 0,
+        finalPrice: Number(rawOrderData.finalPrice) || 0,
+      };
+      
+      // Get order products using new DatabaseService
+      const orderProducts = await DatabaseService.executeQuery(
+        shopId,
+        `SELECT op.*, p.title as productTitle, p.mainImage as productImage 
+         FROM OrderProduct op 
+         LEFT JOIN Product p ON op.productId = p.id 
+         WHERE op.orderId = ?`,
+        [orderId],
+        { cache: true, ttl: 5 * 60 * 1000 } // 5 minutes cache
+      );
+      orderData.orderProducts = orderProducts;
+    } else {
+      notFound = true;
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin đơn hàng:', error);
+    notFound = true;
+  }
+}
+
+function maskPhone(phone: string): string {
+  if (!phone) return '';
+  return phone.replace(/(\d{2})\d{4}(\d{3})/, '$1***$2');
+}
+
+function maskEmail(email: string): string {
+  if (!email) return '';
+  const [name, domain] = email.split('@');
+  if (!name || !domain) return email;
+  return name[0] + '***' + name.slice(-1) + '@' + domain;
+}
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    maximumFractionDigits: 0
+  }).format(price);
+}
+---
+
+<Layout title="Cảm ơn bạn đã đặt hàng!">
+  {notFound ? (
+    <div class="max-w-4xl mx-auto px-4 py-8">
+      <div class="text-center text-red-500 mb-6">
+        <h1 class="text-2xl font-bold mb-2">Không tìm thấy đơn hàng!</h1>
+        <p class="text-gray-600">Vui lòng kiểm tra lại mã đơn hàng hoặc liên hệ với chúng tôi.</p>
+      </div>
+      <div class="flex justify-center gap-4">
+        <a href="/" class="bg-primary-600 text-white px-6 py-2 rounded font-semibold hover:bg-primary-700">Tiếp tục mua hàng</a>
+      </div>
+    </div>
+  ) : orderData && (
+    <div class="max-w-4xl mx-auto px-4 py-8">
+      <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row gap-6">
+        {/* Cột trái */}
+        <div class="flex-1">
+          <h2 class="text-xl font-bold text-primary-600 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Cảm ơn bạn đã đặt hàng
+          </h2>
+          <p class="mb-6 text-gray-700">Đơn hàng của bạn đã được xác nhận. Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.</p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-gray-50 p-4 rounded">
+              <div class="font-semibold mb-2 text-gray-800">Thông tin mua hàng</div>
+              <div class="text-sm text-gray-700">
+                <div class="mb-1"><strong>Tên:</strong> {orderData.buyerName}</div>
+                <div class="mb-1"><strong>SĐT:</strong> {maskPhone(orderData.buyerPhone)}</div>
+                {orderData.buyerNotes && (
+                  <div class="mb-1"><strong>Ghi chú:</strong> {orderData.buyerNotes}</div>
+                )}
+              </div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded">
+              <div class="font-semibold mb-2 text-gray-800">Địa chỉ nhận hàng</div>
+              <div class="text-sm text-gray-700">
+                <div class="mb-1"><strong>Tên:</strong> {orderData.buyerName}</div>
+                <div class="mb-1"><strong>Địa chỉ:</strong> {orderData.buyerAddress}</div>
+                <div class="mb-1"><strong>SĐT:</strong> {maskPhone(orderData.buyerPhone)}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-50 p-4 rounded">
+              <div class="font-semibold mb-2 text-gray-800">Phương thức thanh toán</div>
+              <div class="text-sm text-gray-700">
+                {orderData.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : orderData.paymentMethod}
+              </div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded">
+              <div class="font-semibold mb-2 text-gray-800">Phương thức vận chuyển</div>
+              <div class="text-sm text-gray-700">
+                {orderData.shippingDetails || 'Giao hàng nhanh 2-4 ngày'}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Cột phải: Đơn hàng */}
+        <div class="w-full md:w-[340px] bg-gray-50 rounded-lg p-4 border">
+          <div class="font-semibold mb-4 text-gray-800">
+            Đơn hàng <span class="text-primary-600 font-bold">{orderData.orderCode}</span>
+            <div class="text-xs text-gray-500 mt-1">({orderData.orderProducts?.length || 0} sản phẩm)</div>
+          </div>
+          
+          <div class="space-y-3 mb-4">
+            {orderData.orderProducts?.map((item: any) => (
+              <div class="flex items-center gap-3 p-2 bg-white rounded">
+                {item.productImage && (
+                  <img src={item.productImage} alt={item.itemName || item.productTitle} class="w-12 h-12 rounded object-cover" />
+                )}
+                <div class="flex-1">
+                  <div class="font-medium text-sm">{item.itemName || item.productTitle}</div>
+                  {item.itemVariant && (
+                    <div class="text-xs text-gray-500">{item.itemVariant}</div>
+                  )}
+                  <div class="text-xs text-gray-500">x{item.quantity}</div>
+                </div>
+                <div class="font-semibold text-sm">
+                  {formatPrice(Number(item.salesPrice || item.listedPrice || 0))}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div class="border-t pt-3 space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Tạm tính</span>
+              <span class="font-medium">{formatPrice(orderData.price)}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">Phí vận chuyển</span>
+              <span class="font-medium">{formatPrice(orderData.shippingFee)}</span>
+            </div>
+            <div class="flex justify-between font-bold text-base border-t pt-2">
+              <span>Tổng cộng</span>
+              <span class="text-primary-600">{formatPrice(orderData.finalPrice)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-center gap-4 mt-8">
+        <a href="/" class="bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+          Tiếp tục mua hàng
+        </a>
+        <button onclick="window.print()" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+          In đơn hàng
+        </button>
+      </div>
+    </div>
+  )}
+</Layout>
