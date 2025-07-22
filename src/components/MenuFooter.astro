@@ -1,6 +1,4 @@
 ---
-import { Button, Input } from '@/components/ui';
-
 export interface FooterSettings {
   showProductCategories: boolean;
   showCustomPages: boolean;
@@ -91,19 +89,18 @@ console.log('🔘 Footer settings:', footerSettings);
         <h3 class="text-lg font-semibold mb-4">Đăng ký nhận tin</h3>
         <p class="text-neutral/70 mb-4 text-sm">Nhận thông tin khuyến mãi và sản phẩm mới nhất.</p>
         <form class="flex flex-col space-y-2">
-          <Input 
+          <input 
             type="email" 
             placeholder="Email của bạn" 
             class="bg-neutral/20 text-white border-neutral/30 focus:border-primary focus:ring-primary/20" 
             required
           />
-          <Button 
+          <button 
             type="submit" 
-            variant="primary"
-            fullWidth={true}
+            class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors"
           >
             Đăng ký
-          </Button>
+          </button>
         </form>
       </div>
 

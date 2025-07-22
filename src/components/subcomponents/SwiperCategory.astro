@@ -1,6 +1,5 @@
 ---
-import ProductElement from '@/components/product/ProductElement.astro';
-import type { Root,CategoryWithProducts } from '@/api/types'; 
+import ProductElement from '../product/ProductElement.astro';
 interface Props {
     products: any[];
 }
@@ -13,7 +12,7 @@ const { products }: Props = Astro.props;
 <div class="swiper swiper_category_related ">
     <div class="swiper-wrapper">
         {
-            products.map((product:Root)=>(
+            products.map((product: any) => (
             <div class="swiper-slide">
                 <ProductElement product={product}></ProductElement>
             </div>

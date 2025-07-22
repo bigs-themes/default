@@ -1,6 +1,5 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
+
 ---
 
 <Layout title="UI Components Demo - Bigs StoreFront">
@@ -48,10 +47,10 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Variants</h3>
             <div class="flex flex-wrap gap-3">
-              <Button variant="primary">Primary</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="outline">Outline</Button>
-              <Button variant="ghost">Ghost</Button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Primary</button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Secondary</button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Outline</button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Ghost</button>
             </div>
           </div>
 
@@ -59,9 +58,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Sizes</h3>
             <div class="flex flex-wrap items-center gap-3">
-              <Button variant="primary" size="sm">Small</Button>
-              <Button variant="primary" size="md">Medium</Button>
-              <Button variant="primary" size="lg">Large</Button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Small</button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Medium</button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Large</button>
             </div>
           </div>
 
@@ -69,9 +68,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">States</h3>
             <div class="flex flex-wrap gap-3">
-              <Button variant="primary" loading={true}>Loading</Button>
-              <Button variant="primary" disabled={true}>Disabled</Button>
-              <Button variant="primary" fullWidth={true}>Full Width</Button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Loading</button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Disabled</button>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">Full Width</button>
             </div>
           </div>
         </div>
@@ -86,10 +85,10 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Types</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input type="text" placeholder="Text input" />
-              <Input type="email" placeholder="Email input" />
-              <Input type="password" placeholder="Password input" />
-              <Input type="search" placeholder="Search input" />
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
           </div>
 
@@ -97,9 +96,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Validation States</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input variant="default" placeholder="Default state" />
-              <Input variant="error" placeholder="Error state" />
-              <Input variant="success" placeholder="Success state" />
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
           </div>
 
@@ -107,9 +106,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Sizes</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input size="sm" placeholder="Small input" />
-              <Input size="md" placeholder="Medium input" />
-              <Input size="lg" placeholder="Large input" />
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
             </div>
           </div>
         </div>
@@ -124,12 +123,12 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Variants</h3>
             <div class="flex flex-wrap gap-3">
-              <Badge variant="primary">Primary</Badge>
-              <Badge variant="secondary">Secondary</Badge>
-              <Badge variant="success">Success</Badge>
-              <Badge variant="warning">Warning</Badge>
-              <Badge variant="error">Error</Badge>
-              <Badge variant="info">Info</Badge>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Primary</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Secondary</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Success</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Warning</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Error</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Info</span>
             </div>
           </div>
 
@@ -137,9 +136,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Sizes</h3>
             <div class="flex flex-wrap items-center gap-3">
-              <Badge variant="secondary" size="sm">Small</Badge>
-              <Badge variant="secondary" size="md">Medium</Badge>
-              <Badge variant="secondary" size="lg">Large</Badge>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Small</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Medium</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Large</span>
             </div>
           </div>
 
@@ -147,10 +146,10 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <div>
             <h3 class="text-lg font-semibold text-neutral mb-3">Examples</h3>
             <div class="flex flex-wrap gap-3">
-              <Badge variant="secondary">-20%</Badge>
-              <Badge variant="success">Mới</Badge>
-              <Badge variant="warning">Hot</Badge>
-              <Badge variant="error">Hết hàng</Badge>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">-20%</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Mới</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Hot</span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Hết hàng</span>
             </div>
           </div>
         </div>
@@ -207,9 +206,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
         
         <div class="space-y-4">
           <p class="text-neutral/70">Click vào button bên dưới để mở modal demo:</p>
-          <Button variant="primary" onclick="openModal('demo-modal')">
+          <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">
             Mở Modal Demo
-          </Button>
+          </button>
         </div>
       </Card>
 
@@ -222,7 +221,7 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <Card variant="default" padding="none" class="overflow-hidden">
             <div class="relative">
               <div class="w-full h-48 bg-neutral/10"></div>
-              <Badge variant="secondary" class="absolute top-2 left-2">-15%</Badge>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">-15%</span>
             </div>
             <div class="p-4">
               <h3 class="font-semibold text-neutral mb-2">Sản phẩm mẫu 1</h3>
@@ -231,9 +230,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
                 <span class="font-bold text-neutral">500.000₫</span>
                 <span class="text-neutral/60 text-sm line-through">588.000₫</span>
               </div>
-              <Button variant="primary" fullWidth={true}>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">
                 Thêm vào giỏ
-              </Button>
+              </button>
             </div>
           </Card>
 
@@ -241,7 +240,7 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <Card variant="default" padding="none" class="overflow-hidden">
             <div class="relative">
               <div class="w-full h-48 bg-neutral/10"></div>
-              <Badge variant="success" class="absolute top-2 left-2">Mới</Badge>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Mới</span>
             </div>
             <div class="p-4">
               <h3 class="font-semibold text-neutral mb-2">Sản phẩm mẫu 2</h3>
@@ -249,9 +248,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
               <div class="flex justify-between items-center mb-3">
                 <span class="font-bold text-neutral">750.000₫</span>
               </div>
-              <Button variant="primary" fullWidth={true}>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">
                 Thêm vào giỏ
-              </Button>
+              </button>
             </div>
           </Card>
 
@@ -259,7 +258,7 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
           <Card variant="default" padding="none" class="overflow-hidden">
             <div class="relative">
               <div class="w-full h-48 bg-neutral/10"></div>
-              <Badge variant="warning" class="absolute top-2 left-2">Hot</Badge>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Hot</span>
             </div>
             <div class="p-4">
               <h3 class="font-semibold text-neutral mb-2">Sản phẩm mẫu 3</h3>
@@ -268,9 +267,9 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
                 <span class="font-bold text-neutral">1.200.000₫</span>
                 <span class="text-neutral/60 text-sm line-through">1.500.000₫</span>
               </div>
-              <Button variant="primary" fullWidth={true}>
+              <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">
                 Thêm vào giỏ
-              </Button>
+              </button>
             </div>
           </Card>
         </div>
@@ -293,23 +292,23 @@ import { Button, Input, Badge, Card, Alert, Modal } from '@/components/ui';
       <div class="mt-6">
         <h4 class="font-semibold text-neutral mb-2">Test các components khác trong modal:</h4>
         <div class="space-y-3">
-          <Input placeholder="Input trong modal" />
+          <input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
           <div class="flex gap-2">
-            <Badge variant="primary">Primary</Badge>
-            <Badge variant="secondary">Secondary</Badge>
-            <Badge variant="success">Success</Badge>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Primary</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Secondary</span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Success</span>
           </div>
         </div>
       </div>
     </div>
     
     <Fragment slot="footer">
-      <Button variant="secondary" onclick="closeModal('demo-modal')">
+      <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">
         Hủy
-      </Button>
-      <Button variant="primary">
+      </button>
+      <button class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors">
         Xác nhận
-      </Button>
+      </button>
     </Fragment>
   </Modal>
 </Layout> 

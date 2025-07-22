@@ -1,37 +1,48 @@
 ---
-import SwiperCategory from '@/components/subcomponents/SwiperCategory.astro';
-import ProductService from '@/services/ProductService';
+import SwiperCategory from '../subcomponents/SwiperCategory.astro';
 
 export interface Props {
   currentProductId: string;
   sections: string[];
 }
 
-const url = new URL(Astro.request.url);
-const host = url.hostname;
-const shopId = host ? host.split('.')[0] : '';
-if(shopId === ''){
-  Astro.redirect('/404');
-}
-
 const { currentProductId, sections } = Astro.props;
 
-// Extract section IDs from sections array
-const sectionIds = sections.map((section: any) => section.sectionId);
-
-// Get related products using ProductService
-let products: any[] = [];
-try {
-  products = await ProductService.getRelatedProducts(
-    shopId,
-    currentProductId,
-    10 // limit
-  );
-  console.log('Successfully loaded related products:', products.length);
-} catch (error) {
-  console.error('Error loading related products:', error);
-  products = [];
-}
+// Default related products since we removed business logic
+const products = [
+  {
+    id: '1',
+    title: 'Sản phẩm liên quan 1',
+    url: 'san-pham-lien-quan-1',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 1000000,
+    calculatedDiscount: 10
+  },
+  {
+    id: '2',
+    title: 'Sản phẩm liên quan 2',
+    url: 'san-pham-lien-quan-2',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 2000000,
+    calculatedDiscount: 15
+  },
+  {
+    id: '3',
+    title: 'Sản phẩm liên quan 3',
+    url: 'san-pham-lien-quan-3',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 1500000,
+    calculatedDiscount: 0
+  },
+  {
+    id: '4',
+    title: 'Sản phẩm liên quan 4',
+    url: 'san-pham-lien-quan-4',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 3000000,
+    calculatedDiscount: 20
+  }
+];
 
 // Format price in Vietnamese currency
 const formatPrice = (price: number) => {

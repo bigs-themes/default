@@ -1,5 +1,12 @@
 ---
-import type { ShopContext } from './middleware';
+// Define ShopContext interface locally since middleware doesn't exist in template
+export interface ShopContext {
+  shopId: string;
+  isPreview: boolean;
+  isProduction: boolean;
+  themePath: string;
+  configPath: string;
+}
 
 export interface Props {
   title?: string;

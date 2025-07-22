@@ -1,5 +1,5 @@
 ---
-import { Button } from '@/components/ui';
+import { Button } from '../ui';
 ---
 
 <div id="cart-popup" class="hidden fixed inset-0 z-50">
@@ -40,14 +40,14 @@ import { Button } from '@/components/ui';
             onclick="window.location.href='/gio-hang'"
           >
             Xem giỏ hàng
-          </Button>
+          </button>
           <Button 
             variant="outline"
             fullWidth={true}
             onclick="window.location.href='/check-out'"
           >
             Thanh toán
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -55,7 +55,6 @@ import { Button } from '@/components/ui';
 </div>
 
 <script>
-  import { Cart } from '../../utils/cart';
 
   // Initialize cart when DOM is ready
   document.addEventListener('DOMContentLoaded', () => {

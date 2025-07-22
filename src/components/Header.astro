@@ -1,19 +1,11 @@
 ---
-import { Input, Badge } from '@/components/ui';
-import { shopStyleService } from '@/services/ShopStyleService';
-
 // Lấy shop alias từ subdomain
 const url = new URL(Astro.request.url);
 const host = url.hostname;
 const shopAlias = host ? host.split('.')[0] : '';
 
-// Lấy logo URL
-let primaryLogoUrl = null;
-try {
-  primaryLogoUrl = await shopStyleService.getPrimaryLogoUrl(shopAlias);
-} catch (error) {
-  console.error('Error loading logo:', error);
-}
+// For now, use default logo since we removed the service
+const primaryLogoUrl = null;
 ---
 
 <header class="sticky top-0 z-50 bg-white shadow-sm">
@@ -49,7 +41,7 @@ try {
       <!-- Search Bar Desktop -->
       <div class="hidden md:flex items-center flex-1 max-w-xs mx-4">
         <div class="w-full relative">
-          <Input
+          <input
             type="search"
             placeholder="Tìm kiếm sản phẩm..."
             size="md"
@@ -93,13 +85,9 @@ try {
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
           <div id="header-cart-count" class="absolute -top-2 -right-2">
-            <Badge 
-              variant="error" 
-              size="sm" 
-              class="cart-count"
-            >
+            <span class="cart-count">
               0
-            </Badge>
+            </span>
           </div>
         </a>
         
@@ -129,7 +117,7 @@ try {
   <!-- Mobile Menu -->
   <div class="md:hidden hidden bg-white pb-4 px-4" id="mobile-menu">
     <div class="flex items-center mb-4 relative">
-      <Input
+      <input
         type="search"
         placeholder="Tìm kiếm sản phẩm..."
         size="md"

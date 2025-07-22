@@ -1,5 +1,5 @@
 ---
-import { Button } from '@/components/ui';
+
 ---
 
 <section class="relative overflow-hidden">
@@ -26,20 +26,18 @@ import { Button } from '@/components/ui';
           Khám phá hàng ngàn sản phẩm chất lượng cao với giá ưu đãi đặc biệt hôm nay.
         </p>
         <div class="flex flex-col sm:flex-row gap-4">
-          <Button 
-            variant="primary" 
-            size="lg"
+          <button 
+            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition-colors text-lg font-medium"
             onclick="window.location.href='/san-pham'"
           >
             Mua sắm ngay
-          </Button>
-          <Button 
-            variant="secondary" 
-            size="lg"
+          </button>
+          <button 
+            class="bg-secondary text-white px-6 py-3 rounded-lg hover:bg-secondary-dark transition-colors text-lg font-medium"
             onclick="window.location.href='/khuyen-mai'"
           >
             Xem khuyến mãi
-          </Button>
+          </button>
         </div>
       </div>
     </div>

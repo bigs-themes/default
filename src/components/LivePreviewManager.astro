@@ -1,17 +1,64 @@
 ---
-import { shopStyleService } from "../services/ShopStyleService";
-
-// Load initial config
+// Load initial config (placeholder since we removed the service)
 let initialConfig = null;
-try {
-  const host = Astro.request.headers.get("host") || "";
-  const shopId = host.split(".")[0];
+const host = Astro.request.headers.get("host") || "";
+const shopId = host.split(".")[0];
 
-  if (shopId && shopId !== "localhost" && shopId !== "127") {
-    initialConfig = await shopStyleService.getShopStyleConfig(shopId);
-  }
-} catch (error) {
-  // Failed to load initial config
+if (shopId && shopId !== "localhost" && shopId !== "127") {
+  // Use default config since we removed the service
+  initialConfig = {
+    id: 'default',
+    templateId: 'default',
+    settings: {
+      colors: {
+        primary: '#3b82f6',
+        secondary: '#6b7280',
+        neutral: '#9ca3af',
+        semantic: '#f59e0b',
+        background: '#ffffff',
+        surface: '#f9fafb',
+        text: '#111827',
+        textSecondary: '#6b7280'
+      },
+      fonts: {
+        heading: 'Inter',
+        body: 'Inter'
+      },
+      styles: {
+        button: {
+          primary: {
+            background: '#3b82f6',
+            text: '#ffffff',
+            hoverEffect: 'scale'
+          },
+          secondary: {
+            background: '#6b7280',
+            text: '#ffffff',
+            hoverEffect: 'scale'
+          }
+        },
+        card: {
+          default: {
+            background: '#ffffff',
+            borderColor: '#e5e7eb',
+            borderRadius: '0.5rem',
+            hoverEffect: 'scale'
+          }
+        }
+      }
+    },
+    pageInterface: {
+      layout: 'default',
+      announcementBarSettings: {
+        visible: true,
+        content: 'Chào mừng đến với BigS!',
+        textColor: '#ffffff',
+        backgroundColor: '#000000',
+        showOnHomepageOnly: false
+      }
+    },
+    isPublished: true
+  };
 }
 ---
 

@@ -6,52 +6,44 @@ import ReturnPolicy from '../../components/product/ReturnPolicy.astro';
 import RelatedProducts from '../../components/product/RelatedProducts.astro';
 import RecentlyViewed from '../../components/product/RecentlyViewed.astro';
 import ReviewsSection from '../../components/product/ReviewsSection.astro';
-import ProductService from '@/services/ProductService';
 
 export const prerender = false; // Not needed in 'server' mode
 console.log('Astro.params:', Astro.params);
 const { slug } = Astro.params
 
-const url = new URL(Astro.request.url);
-const host = url.hostname;
-const shopId = host ? host.split('.')[0] : '';
-if(shopId === ''){
-  Astro.redirect('/404');
-}
-
-// Get product by slug using ProductService
-const product = await ProductService.getProductBySlug(shopId, slug || '');
-
-// Check if product exists
-if (!product) {
-  Astro.redirect('/404');
-}
-
-//Fake data - only add if product exists
-if (product) {
-(product as any).specs = [
-      // { name: "Màn hình", value: "6.1 inch, Super Retina XDR, OLED, 2556 x 1179 pixel" },
-      // { name: "CPU", value: "Apple A16 Bionic" },
-      // { name: "RAM", value: "6 GB" },
-      // { name: "Bộ nhớ trong", value: "128 GB" },
-      // { name: "Camera sau", value: "48.0 MP + 12.0 MP + 12.0 MP" },
-      // { name: "Camera trước", value: "12.0 MP" },
-      // { name: "Pin", value: "3200 mAh" }
-    ];
-
-(product as any).rating = 4.8;
-}
-// product.variants = {
-//       colors: ["Đen", "Bạc", "Vàng", "Tím"],
-//       storage: ["128GB", "256GB", "512GB", "1TB"]
-//     };
-//End Fake data
+// Default product data since we removed business logic
+const product = {
+  id: '1',
+  title: 'Sản phẩm mẫu',
+  name: 'Sản phẩm mẫu',
+  url: slug || 'san-pham-mau',
+  mainImage: 'https://via.placeholder.com/600x600',
+  additionalMedia: [
+    'https://via.placeholder.com/600x600',
+    'https://via.placeholder.com/600x600',
+    'https://via.placeholder.com/600x600'
+  ],
+  price: 2000000,
+  calculatedDiscount: 15,
+  description: 'Mô tả sản phẩm mẫu với thông tin chi tiết về tính năng và chất lượng.',
+  rating: 4.8,
+  reviewCount: 125,
+  specs: [
+    { name: "Màn hình", value: "6.1 inch, Super Retina XDR, OLED, 2556 x 1179 pixel" },
+    { name: "CPU", value: "Apple A16 Bionic" },
+    { name: "RAM", value: "6 GB" },
+    { name: "Bộ nhớ trong", value: "128 GB" },
+    { name: "Camera sau", value: "48.0 MP + 12.0 MP + 12.0 MP" },
+    { name: "Camera trước", value: "12.0 MP" },
+    { name: "Pin", value: "3200 mAh" }
+  ],
+  sections: []
+};
 
 const images = [
   ...(product?.mainImage ? [product.mainImage] : []),
   ...(Array.isArray(product?.additionalMedia) ? product.additionalMedia : [])
 ];
-// console.log('product:', product);
 ---
 
 <Layout title={`${product?.title || 'Sản phẩm'} | BigS`} description={product?.description || ''}>

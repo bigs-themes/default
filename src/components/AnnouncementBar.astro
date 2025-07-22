@@ -1,5 +1,5 @@
 ---
-import { Button } from '@/components/ui';
+
 
 // Props để nhận cấu hình từ LivePreviewManager
 export interface Props {
@@ -34,14 +34,12 @@ console.log('🎯 AnnouncementBar.astro - shouldShow:', shouldShow);
           </marquee>
         </div>
         <div id="announcement-button">
-          <Button 
-            variant="outline" 
-            size="sm"
-            class="hidden sm:inline-block border-current hover:bg-white hover:text-black"
+          <button 
+            class="hidden sm:inline-block border-current hover:bg-white hover:text-black px-3 py-1 rounded text-sm font-medium transition-colors"
             onclick="window.location.href='/san-pham'"
           >
             Xem ngay
-          </Button>
+          </button>
         </div>
       </div>
     </div>

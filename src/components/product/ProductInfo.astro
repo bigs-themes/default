@@ -1,15 +1,22 @@
 ---
-// import { Variants } from '../../utils/variants';
-import { getDiscountedPrice, formatPrice } from '@/utils/price';
-import { Button } from '@/components/ui';
+// Helper functions
+function getDiscountedPrice(price: number, discount: number): number {
+  return Math.round(price * (1 - discount / 100));
+}
 
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(price);
+}
 
 export interface Props {
   product: any;
 }
 
 const { product } = Astro.props;
-
 ---
 
 {product ? (
@@ -121,10 +128,8 @@ const { product } = Astro.props;
   </div>
   
   <div class="flex flex-col sm:flex-row gap-4 mb-8">
-    <Button 
-      variant="primary" 
-      size="lg" 
-      fullWidth={true}
+    <button 
+      class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition-colors font-medium"
       id="add-to-cart"
       data-product-id={product.id}
       data-product-name={product.title}
@@ -136,11 +141,9 @@ const { product } = Astro.props;
         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
       </svg>
       Thêm vào giỏ
-    </Button>
-    <Button 
-      variant="secondary" 
-      size="lg" 
-      fullWidth={true}
+    </button>
+    <button 
+      class="w-full bg-secondary text-white px-6 py-3 rounded-lg hover:bg-secondary-dark transition-colors font-medium"
       id="buy-now"
       data-product-id={product.id}
       data-product-name={product.title}
@@ -149,7 +152,7 @@ const { product } = Astro.props;
       data-product-slug={product.url}
     >
       Mua ngay
-    </Button>
+    </button>
   </div>
   
   <div class="flex flex-wrap gap-4 mt-4 text-sm text-neutral">
@@ -205,14 +208,6 @@ const { product } = Astro.props;
 )}
 
 <script define:vars={{ product }}>
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
   // Add functions to save and load variant states
   function saveSelectedVariants() {
     const selectedVariants = Array.from(document.querySelectorAll('.variant-option input:checked')).map(input => ({

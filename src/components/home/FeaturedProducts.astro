@@ -1,26 +1,51 @@
 ---
-import { getDiscountedPrice, formatPrice } from "@/utils/price";
-import ProductService from "@/services/ProductService";
-import { Button } from '@/components/ui';
+// Default featured products since we removed business logic
+const products = [
+  {
+    id: '1',
+    title: 'Sản phẩm mẫu 1',
+    url: 'san-pham-mau-1',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 1000000,
+    calculatedDiscount: 10
+  },
+  {
+    id: '2',
+    title: 'Sản phẩm mẫu 2',
+    url: 'san-pham-mau-2',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 2000000,
+    calculatedDiscount: 15
+  },
+  {
+    id: '3',
+    title: 'Sản phẩm mẫu 3',
+    url: 'san-pham-mau-3',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 1500000,
+    calculatedDiscount: 0
+  },
+  {
+    id: '4',
+    title: 'Sản phẩm mẫu 4',
+    url: 'san-pham-mau-4',
+    mainImage: 'https://via.placeholder.com/300x300',
+    price: 3000000,
+    calculatedDiscount: 20
+  }
+];
 
-// Tạo URL cho API
-const url = new URL(Astro.request.url);
-const host = url.hostname;
-const shopId = host ? host.split(".")[0] : "";
-if (shopId === "") {
-  Astro.redirect("/404");
+// Helper functions
+function getDiscountedPrice(price: number, discount: number): number {
+  return Math.round(price * (1 - discount / 100));
 }
 
-// Get featured products using ProductService
-let products: any[] = [];
-try {
-  products = await ProductService.getFeaturedProducts(shopId, 8);
-    // console.log('Successfully loaded featured products:', products.length);
-    // console.log('Featured products data:', products);
-    
-} catch (error) {
-  console.error('Error loading featured products:', error);
-  products = [];
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(price);
 }
 ---
 
@@ -89,10 +114,8 @@ try {
                 </div>
               </a>
               <div class="mt-4">
-              <Button
-                variant="primary"
-                fullWidth={true}
-                class="add-to-variant"
+              <button
+                class="w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark transition-colors add-to-variant"
                 data-product-id={product.id}
                 data-product-name={product.title}
                 data-product-image={product.mainImage}
@@ -114,7 +137,7 @@ try {
                   />
                 </svg>
                 Thêm vào giỏ
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -130,19 +153,13 @@ try {
 <script>
   // Simple event delegation for add to cart buttons (works with server-side rendered content)
   document.addEventListener("DOMContentLoaded", () => {
-    // Initialize variants if not exists
-    if (!window.variants) {
-      // Try to import Variants class
-      try {
-        import('../../utils/variants').then(module => {
-          window.variants = new module.Variants();
-        }).catch(error => {
-          console.error('Failed to load Variants:', error);
-        });
-      } catch (error) {
-        console.error('Variants not available:', error);
+    // Simple variants placeholder since we removed business logic
+    window.variants = {
+      loadProduct: (productId: string) => {
+        console.log('Loading product:', productId);
+        return Promise.resolve();
       }
-    }
+    };
 
     // Use event delegation for add to cart buttons
     document.addEventListener('click', (e) => {
