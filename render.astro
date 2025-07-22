@@ -1,0 +1,111 @@
+---
+import type { ShopContext } from './middleware';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  currentPage?: string;
+}
+
+const { title = "BigS Store", description = "Multi-tenant e-commerce platform", currentPage = 'home' } = Astro.props;
+
+const shop = (Astro.locals as any).shop as ShopContext;
+
+if (!shop) {
+  throw new Error('Shop context not found. Make sure middleware is configured.');
+}
+
+console.log('🎨 Rendering theme for shop:', shop.shopId);
+console.log('📁 Theme path:', shop.themePath);
+---
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+      <div class="container mx-auto px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold text-gray-900">BigS Store</h1>
+            <span class="text-sm text-gray-500">({shop.shopId})</span>
+          </div>
+          <nav class="flex items-center space-x-6">
+            <a href="/" class="text-gray-700 hover:text-blue-600">Trang chủ</a>
+            <a href="/san-pham" class="text-gray-700 hover:text-blue-600">Sản phẩm</a>
+            <a href="/gio-hang" class="text-gray-700 hover:text-blue-600">Giỏ hàng</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+      <div class="bg-white rounded-lg shadow-md p-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">
+          Chào mừng đến với {shop.shopId}
+        </h2>
+        <p class="text-lg text-gray-600 mb-6">
+          Đây là trang chủ của shop {shop.shopId} - {description}
+        </p>
+        
+        <!-- Shop Info -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <h3 class="text-lg font-semibold text-blue-900 mb-2">Thông tin Shop:</h3>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li><strong>Shop ID:</strong> {shop.shopId}</li>
+            <li><strong>Mode:</strong> {shop.isPreview ? 'Preview' : 'Production'}</li>
+            <li><strong>Theme Path:</strong> {shop.themePath}</li>
+            <li><strong>Config Path:</strong> {shop.configPath}</li>
+          </ul>
+        </div>
+
+        <!-- Sample Products -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="bg-gray-200 h-48 rounded mb-4"></div>
+            <h3 class="font-medium mb-2">Sản phẩm mẫu 1</h3>
+            <p class="text-gray-600 text-sm mb-2">Mô tả sản phẩm</p>
+            <p class="font-bold text-blue-600">500.000₫</p>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="bg-gray-200 h-48 rounded mb-4"></div>
+            <h3 class="font-medium mb-2">Sản phẩm mẫu 2</h3>
+            <p class="text-gray-600 text-sm mb-2">Mô tả sản phẩm</p>
+            <p class="font-bold text-blue-600">750.000₫</p>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="bg-gray-200 h-48 rounded mb-4"></div>
+            <h3 class="font-medium mb-2">Sản phẩm mẫu 3</h3>
+            <p class="text-gray-600 text-sm mb-2">Mô tả sản phẩm</p>
+            <p class="font-bold text-blue-600">1.200.000₫</p>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <div class="bg-gray-200 h-48 rounded mb-4"></div>
+            <h3 class="font-medium mb-2">Sản phẩm mẫu 4</h3>
+            <p class="text-gray-600 text-sm mb-2">Mô tả sản phẩm</p>
+            <p class="font-bold text-blue-600">2.500.000₫</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+      <div class="container mx-auto px-4">
+        <div class="text-center">
+          <p>&copy; 2024 BigS Store - {shop.shopId}. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+</html> 
